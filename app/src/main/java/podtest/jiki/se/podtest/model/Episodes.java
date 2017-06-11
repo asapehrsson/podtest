@@ -1,18 +1,10 @@
 package podtest.jiki.se.podtest.model;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 import java.util.List;
 
 public class Episodes {
 
-    @SerializedName("episodes")
-    @Expose
     private List<Episode> episodes = null;
-
-    //@SerializedName("pagination")
-    //@Expose
     private Pagination pagination;
 
     public List<Episode> getEpisodes() {

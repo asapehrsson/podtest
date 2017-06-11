@@ -1,13 +1,12 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
                                              xmlns:app="http://schemas.android.com/apk/res-auto"
-                                             xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="match_parent"
                                              android:layout_height="wrap_content"
-                                             android:layout_marginBottom="2dp"
-                                             android:layout_marginLeft="16dp"
-                                             android:layout_marginRight="16dp"
-                                             android:layout_marginTop="2dp"
-                                             android:orientation="horizontal">
+                                             android:orientation="horizontal"
+                                             android:paddingBottom="2dp"
+                                             android:paddingLeft="16dp"
+                                             android:paddingRight="16dp"
+                                             android:paddingTop="2dp">
 
     <ImageView
         android:id="@+id/left_image"
@@ -30,7 +29,7 @@
         android:layout_marginTop="8dp"
         android:ellipsize="end"
         android:maxLines="1"
-        android:text="Allt du vill veta"
+        android:text="First line"
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/second_line"
         app:layout_constraintHorizontal_weight="1"
@@ -42,7 +41,6 @@
 
     <TextView
         android:id="@+id/second_line"
-
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
@@ -50,6 +48,7 @@
         android:layout_marginRight="8dp"
         android:ellipsize="end"
         android:maxLines="2"
+        android:text="Second line."
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_weight="1"
@@ -57,7 +56,6 @@
         app:layout_constraintRight_toLeftOf="@+id/right_image"
         app:layout_constraintTop_toBottomOf="@+id/first_line"
         app:layout_constraintVertical_weight="2"
-        tools:text="Avsnitt 7. Snoken."
 
         />
 

@@ -8,4 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="CardViewStyle" parent="AppTheme">
+        <item name="android:textColor">@color/cardTextColor</item>
+        <item name="android:background">@color/cardBackground</item>
+    </style>
 </resources>
