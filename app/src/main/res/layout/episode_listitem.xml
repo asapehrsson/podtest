@@ -1,5 +1,6 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
                                              xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="match_parent"
                                              android:layout_height="wrap_content"
                                              android:orientation="horizontal"
@@ -9,7 +10,7 @@
                                              android:paddingTop="2dp">
 
     <ImageView
-        android:id="@+id/left_image"
+        android:id="@+id/episode_image"
         android:layout_width="100dp"
         android:layout_height="72dp"
         android:scaleType="centerCrop"
@@ -29,14 +30,14 @@
         android:layout_marginTop="8dp"
         android:ellipsize="end"
         android:maxLines="1"
-        android:text="First line"
         android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@+id/second_line"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintLeft_toRightOf="@+id/left_image"
-        app:layout_constraintRight_toLeftOf="@+id/right_image"
+        app:layout_constraintLeft_toRightOf="@+id/episode_image"
+        app:layout_constraintRight_toLeftOf="@+id/icon_image"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_weight="1"
+        tools:text="First line"
         />
 
     <TextView
@@ -48,19 +49,19 @@
         android:layout_marginRight="8dp"
         android:ellipsize="end"
         android:maxLines="2"
-        android:text="Second line."
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_weight="1"
-        app:layout_constraintLeft_toRightOf="@+id/left_image"
-        app:layout_constraintRight_toLeftOf="@+id/right_image"
+        app:layout_constraintLeft_toRightOf="@+id/episode_image"
+        app:layout_constraintRight_toLeftOf="@+id/icon_image"
         app:layout_constraintTop_toBottomOf="@+id/first_line"
         app:layout_constraintVertical_weight="2"
+        tools:text="Second line."
 
         />
 
     <ImageView
-        android:id="@+id/right_image"
+        android:id="@+id/icon_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:scaleType="centerCrop"

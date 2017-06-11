@@ -14,7 +14,7 @@ public class PagedEpisodesAdapter extends RecyclerView.Adapter<RecyclerView.View
     private static final int SPINNER_VIEW_TYPE = 1;
     private static final int EPISODE_VIEW_TYPE = 2;
     private LazyLoadedEpisodeList lazyLoadedEpisodeList;
-    private RowItemContract.EpisodePresenter presenter;
+    private EpisodeContract.Presenter presenter;
     private Context context;
 
     public PagedEpisodesAdapter(LazyLoadedEpisodeList lazyLoadedEpisodeList, Context context, EpisodeViewer episodeViewer) {

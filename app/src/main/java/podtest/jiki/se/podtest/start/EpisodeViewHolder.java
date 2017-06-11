@@ -1,8 +1,8 @@
 package podtest.jiki.se.podtest.start;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -12,40 +12,42 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import podtest.jiki.se.podtest.R;
 
-public class EpisodeViewHolder extends RecyclerView.ViewHolder implements RowItemContract.EpisodeView {
-    public View container;
-
+public class EpisodeViewHolder extends RecyclerView.ViewHolder implements EpisodeContract.View {
     @BindView(R.id.first_line) TextView firstRow;
     @BindView(R.id.second_line) TextView secondRow;
-    @BindView(R.id.left_image) ImageView leftImage;
-    @BindView(R.id.right_image) ImageView rightImage;
-
-    private RowItemContract.EpisodePresenter presenter;
+    @Nullable
+    @BindView(R.id.episode_image) ImageView episodeImage;
+    @Nullable
+    @BindView(R.id.icon_image) ImageView iconImage;
+    private android.view.View container;
+    private EpisodeContract.Presenter presenter;
     private Context context;
 
-    public EpisodeViewHolder(View view, Context context) {
+    public EpisodeViewHolder(android.view.View view, Context context) {
         super(view);
 
         this.context = context;
         this.container = view;
 
         ButterKnife.bind(this, container);
-        container.setOnClickListener(new View.OnClickListener() {
+        container.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(android.view.View v) {
                 if (presenter != null) {
-                    presenter.itemClicked(container.getTag(), RowItemContract.Source.CONTAINER);
+                    presenter.itemClicked(container.getTag(), EpisodeContract.Source.CONTAINER);
                 }
             }
         });
-        rightImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (presenter != null) {
-                    presenter.itemClicked(container.getTag(), RowItemContract.Source.RIGHT_ICON);
+        if (iconImage != null) {
+            iconImage.setOnClickListener(new android.view.View.OnClickListener() {
+                @Override
+                public void onClick(android.view.View v) {
+                    if (presenter != null) {
+                        presenter.itemClicked(container.getTag(), EpisodeContract.Source.ICON_IMAGE);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -60,14 +62,18 @@ public class EpisodeViewHolder extends RecyclerView.ViewHolder implements RowIte
 
     @Override
     public void setThumbnail(String url) {
-        Glide.with(context)
-                .load(url)
-                .into(leftImage);
+        if (episodeImage != null) {
+            Glide.with(context)
+                    .load(url)
+                    .into(episodeImage);
+        }
     }
 
     @Override
-    public void setRightIcon(int drawableResourceId) {
-        rightImage.setImageResource(drawableResourceId);
+    public void setIcon(int drawableResourceId) {
+        if (iconImage != null) {
+            iconImage.setImageResource(drawableResourceId);
+        }
     }
 
     @Override
@@ -76,7 +82,7 @@ public class EpisodeViewHolder extends RecyclerView.ViewHolder implements RowIte
     }
 
     @Override
-    public void setPresenter(RowItemContract.EpisodePresenter presenter) {
+    public void setPresenter(EpisodeContract.Presenter presenter) {
         this.presenter = presenter;
     }
 }

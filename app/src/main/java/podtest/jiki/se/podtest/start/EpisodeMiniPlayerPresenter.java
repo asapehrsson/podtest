@@ -7,8 +7,8 @@ import android.net.Uri;
 import podtest.jiki.se.podtest.R;
 import podtest.jiki.se.podtest.model.Episode;
 
-public class EpisodeMiniPlayerPresenter implements RowItemContract.EpisodePresenter {
-    private RowItemContract.EpisodeView view;
+public class EpisodeMiniPlayerPresenter implements EpisodeContract.Presenter {
+    private EpisodeContract.View view;
     private MediaPlayer mediaPlayer;
     private Context context;
 
@@ -17,12 +17,12 @@ public class EpisodeMiniPlayerPresenter implements RowItemContract.EpisodePresen
     }
 
     @Override
-    public void update(Episode episode, RowItemContract.EpisodeView view) {
+    public void update(Episode episode, EpisodeContract.View view) {
         this.view = view;
         view.setFirstRow(episode.getTitle());
         view.setSecondRow(episode.getDescription());
         view.setThumbnail(episode.getImageurl());
-        view.setRightIcon(R.drawable.ic_pause);
+        view.setIcon(R.drawable.ic_pause);
 
         try {
             mediaPlayer = MediaPlayer.create(context, Uri.parse(episode.getListenpodfile().getUrl()));
@@ -33,19 +33,26 @@ public class EpisodeMiniPlayerPresenter implements RowItemContract.EpisodePresen
     }
 
     @Override
-    public void itemClicked(Object tag, @RowItemContract.Source int source) {
-        if (source == RowItemContract.Source.RIGHT_ICON) {
+    public void itemClicked(Object tag, @EpisodeContract.Source int source) {
+        if (source == EpisodeContract.Source.ICON_IMAGE && mediaPlayer != null) {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.pause();
-                view.setRightIcon(R.drawable.ic_play);
+                view.setIcon(R.drawable.ic_play);
             } else {
                 mediaPlayer.start();
-                view.setRightIcon(R.drawable.ic_pause);
+                view.setIcon(R.drawable.ic_pause);
             }
         }
     }
 
-    void close() {
-        mediaPlayer.release();
+    public void close() {
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
+    public boolean isPlayerActive() {
+        return mediaPlayer != null;
     }
 }

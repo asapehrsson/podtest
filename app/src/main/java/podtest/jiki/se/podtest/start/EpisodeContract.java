@@ -9,31 +9,31 @@ import podtest.jiki.se.podtest.model.Episode;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 
-public interface RowItemContract {
-    interface EpisodeView {
+public interface EpisodeContract {
+    interface View {
         void setFirstRow(String text);
 
         void setSecondRow(String text);
 
         void setThumbnail(String url);
 
-        void setRightIcon(int drawableResourceId);
+        void setIcon(int drawableResourceId);
 
         void setTag(Object tag);
 
-        void setPresenter(EpisodePresenter presenter);
+        void setPresenter(Presenter presenter);
     }
 
-    interface EpisodePresenter {
-        void update(Episode episode, EpisodeView view);
+    interface Presenter {
+        void update(Episode episode, View view);
 
         void itemClicked(Object tag, @Source int source);
     }
 
     @Retention(SOURCE)
-    @IntDef({Source.RIGHT_ICON, Source.CONTAINER})
+    @IntDef({Source.ICON_IMAGE, Source.CONTAINER})
     @interface Source {
         int CONTAINER = 0;
-        int RIGHT_ICON = 1;
+        int ICON_IMAGE = 1;
     }
 }
