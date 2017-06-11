@@ -6,27 +6,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.List;
-
-import podtest.jiki.se.podtest.ChangeListener;
 import podtest.jiki.se.podtest.LazyLoadedEpisodeList;
 import podtest.jiki.se.podtest.R;
-import podtest.jiki.se.podtest.model.Episode;
 
-/**
- * Created by asapehrsson on 2017-06-07.
- */
 
-public class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class PagedEpisodesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final int SPINNER_VIEW_TYPE = 1;
     private static final int EPISODE_VIEW_TYPE = 2;
     private LazyLoadedEpisodeList lazyLoadedEpisodeList;
     private RowItemContract.EpisodePresenter presenter;
     private Context context;
 
-    public PageAdapter(LazyLoadedEpisodeList lazyLoadedEpisodeList, Context context) {
+    public PagedEpisodesAdapter(LazyLoadedEpisodeList lazyLoadedEpisodeList, Context context, EpisodeViewer episodeViewer) {
         this.lazyLoadedEpisodeList = lazyLoadedEpisodeList;
-        presenter = new EpisodeViewPresenter();
+        presenter = new EpisodeListViewPresenter(episodeViewer);
         this.context = context;
     }
 

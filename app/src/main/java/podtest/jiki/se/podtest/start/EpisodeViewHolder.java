@@ -17,7 +17,8 @@ public class EpisodeViewHolder extends RecyclerView.ViewHolder implements RowIte
 
     @BindView(R.id.first_line) TextView firstRow;
     @BindView(R.id.second_line) TextView secondRow;
-    @BindView(R.id.image) ImageView imageView;
+    @BindView(R.id.left_image) ImageView leftImage;
+    @BindView(R.id.right_image) ImageView rightImage;
 
     private RowItemContract.EpisodePresenter presenter;
     private Context context;
@@ -28,19 +29,23 @@ public class EpisodeViewHolder extends RecyclerView.ViewHolder implements RowIte
         this.context = context;
         this.container = view;
 
-        try {
-            ButterKnife.bind(this, container);
-            container.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (presenter != null) {
-                        presenter.itemClicked(container.getTag());
-                    }
+        ButterKnife.bind(this, container);
+        container.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (presenter != null) {
+                    presenter.itemClicked(container.getTag(), RowItemContract.Source.CONTAINER);
                 }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            }
+        });
+        rightImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (presenter != null) {
+                    presenter.itemClicked(container.getTag(), RowItemContract.Source.RIGHT_ICON);
+                }
+            }
+        });
     }
 
     @Override
@@ -57,7 +62,12 @@ public class EpisodeViewHolder extends RecyclerView.ViewHolder implements RowIte
     public void setThumbnail(String url) {
         Glide.with(context)
                 .load(url)
-                .into(imageView);
+                .into(leftImage);
+    }
+
+    @Override
+    public void setRightIcon(int drawableResourceId) {
+        rightImage.setImageResource(drawableResourceId);
     }
 
     @Override
