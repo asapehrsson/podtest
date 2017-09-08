@@ -3,20 +3,22 @@ package se.asapehrsson.podtest
 import android.os.Bundle
 import android.support.design.widget.BottomSheetDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.activity_main.*
-import se.asapehrsson.podtest.model.Episode
+import butterknife.BindView
+import butterknife.ButterKnife
+import se.asapehrsson.podtest.data.Episode
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<List<Episode>> {
 
-
-    //@BindView(R.id.recyclerview) internal lateinit var recyclerView: RecyclerView
-    //@BindView(R.id.player_container) internal lateinit var playerContainer: CardView
-    //@BindView(R.id.episode_details) internal lateinit var episodeDetails: View
+    @BindView(R.id.recyclerview) internal lateinit var recyclerView: RecyclerView
+    @BindView(R.id.player_container) internal lateinit var playerContainer: CardView
+    @BindView(R.id.episode_details) internal lateinit var episodeDetails: View
 
     private var adapter: PagedEpisodesAdapter? = null
     private var miniPlayerViewHolder: EpisodeViewHolder? = null
@@ -27,6 +29,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<List<Epi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        ButterKnife.bind(this)
 
         setupEpisodeList()
         setupMiniPlayer()
@@ -42,26 +45,23 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<List<Epi
     }
 
     override fun onChange(event: List<Episode>) {
-        runOnUiThread {
-            adapter?.notifyDataSetChanged()
-        }
+        runOnUiThread { adapter?.notifyDataSetChanged() }
     }
-
     private fun setupEpisodeList() {
         val lazyLoadedEpisodeList = LazyLoadedEpisodeList()
 
         adapter = PagedEpisodesAdapter(lazyLoadedEpisodeList, this, this)
         lazyLoadedEpisodeList.setChangeListener(this)
 
-        x_recycler_view.layoutManager = LinearLayoutManager(this)
-        x_recycler_view.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
     }
 
     private fun setupMiniPlayer() {
         episodeMiniPlayerPresenter = EpisodeMiniPlayerPresenter(this)
 
-        LayoutInflater.from(ContextThemeWrapper(this, R.style.CardViewStyle)).inflate(R.layout.episode_listitem, x_player_container, true)
-        miniPlayerViewHolder = EpisodeViewHolder(x_player_container, this)
+        LayoutInflater.from(ContextThemeWrapper(this, R.style.CardViewStyle)).inflate(R.layout.episode_listitem, playerContainer, true)
+        miniPlayerViewHolder = EpisodeViewHolder(playerContainer, this)
         miniPlayerViewHolder?.setPresenter(episodeMiniPlayerPresenter as EpisodeMiniPlayerPresenter)
 
         showMiniPlayer(false)
@@ -104,16 +104,16 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<List<Epi
     }
 
     private fun showMiniPlayer(show: Boolean) {
-        val layoutParams = x_recycler_view.layoutParams as ViewGroup.MarginLayoutParams
+        val layoutParams = recyclerView.layoutParams as ViewGroup.MarginLayoutParams
 
         if (show) {
-            x_player_container.visibility = View.VISIBLE
-            layoutParams.bottomMargin = x_player_container!!.height
+            playerContainer.visibility = View.VISIBLE
+            layoutParams.bottomMargin = playerContainer!!.height
         } else {
-            x_player_container.visibility = View.INVISIBLE
+            playerContainer.visibility = View.INVISIBLE
             layoutParams.bottomMargin = 0
         }
-        x_recycler_view.layoutParams = layoutParams
+        recyclerView.layoutParams = layoutParams
     }
 
     override fun onPause() {

@@ -1,6 +1,6 @@
 package se.asapehrsson.podtest
 
-import se.asapehrsson.podtest.model.Episode
+import se.asapehrsson.podtest.data.Episode
 
 class EpisodeListViewPresenter(private val episodeViewer: EpisodeViewer) : EpisodeContract.Presenter {
     override fun close() {

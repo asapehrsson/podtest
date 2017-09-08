@@ -1,6 +1,6 @@
 package se.asapehrsson.podtest
 
-import se.asapehrsson.podtest.model.Episode
+import se.asapehrsson.podtest.data.Episode
 
 class EpisodeDetailsPresenter(private val view: EpisodeContract.View) {
 

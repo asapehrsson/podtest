@@ -1,15 +1,15 @@
 package se.asapehrsson.podtest
 
-import se.asapehrsson.podtest.model.Episode
+import se.asapehrsson.podtest.data.Episode
 
 
 interface EpisodeContract {
     interface View {
-        fun setFirstRow(text: String)
+        fun setFirstRow(text: String?)
 
-        fun setSecondRow(text: String)
+        fun setSecondRow(text: String?)
 
-        fun setThumbnail(url: String)
+        fun setThumbnail(url: String?)
 
         fun setIcon(drawableResourceId: Int)
 

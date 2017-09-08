@@ -1,15 +1,14 @@
 package se.asapehrsson.podtest
 
 import android.view.View
-import se.asapehrsson.podtest.model.Episode
-import se.asapehrsson.podtest.model.Episodes
-import se.asapehrsson.podtest.model.Pagination
-import java.util.*
+import se.asapehrsson.podtest.data.Episode
+import se.asapehrsson.podtest.data.Episodes
+import se.asapehrsson.podtest.data.Pagination
 
 class LazyLoadedEpisodeList : Result {
 
     private var pagination: Pagination? = null
-    private val episodes = ArrayList<Episode>()
+    private var episodes = ArrayList<Episode>()
     private var changeListener: ChangeListener<List<Episode>>? = null
     private var isLoading: Boolean = false
 
@@ -47,7 +46,7 @@ class LazyLoadedEpisodeList : Result {
 
     override fun onSuccess(value: Episodes) {
         pagination = value.pagination
-        episodes.addAll(value.episodes)
+        episodes = ArrayList(value.episodes) //instead of addAll()
         isLoading = false
         changeListener?.onChange(episodes)
     }

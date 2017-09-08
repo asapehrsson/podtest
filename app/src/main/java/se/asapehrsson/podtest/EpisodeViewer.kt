@@ -1,7 +1,7 @@
 package se.asapehrsson.podtest
 
 
-import se.asapehrsson.podtest.model.Episode
+import se.asapehrsson.podtest.data.Episode
 
 interface EpisodeViewer {
     fun showInfo(episode: Episode)

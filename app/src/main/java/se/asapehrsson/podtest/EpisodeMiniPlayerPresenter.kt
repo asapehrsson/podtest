@@ -4,7 +4,7 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 
-import se.asapehrsson.podtest.model.Episode
+import se.asapehrsson.podtest.data.Episode
 
 class EpisodeMiniPlayerPresenter(private val context: Context) : EpisodeContract.Presenter {
 
@@ -25,7 +25,7 @@ class EpisodeMiniPlayerPresenter(private val context: Context) : EpisodeContract
 
     fun startPlayer() {
         try {
-            mediaPlayer = MediaPlayer.create(context, Uri.parse(episode!!.listenpodfile.url))
+            mediaPlayer = MediaPlayer.create(context, Uri.parse(episode!!.listenpodfile!!.url))
             mediaPlayer!!.start()
         } catch (e: Exception) {
             e.printStackTrace()

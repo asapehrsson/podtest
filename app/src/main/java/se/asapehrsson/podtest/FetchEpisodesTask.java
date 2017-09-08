@@ -11,7 +11,7 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import se.asapehrsson.podtest.model.Episodes;
+import se.asapehrsson.podtest.data.Episodes;
 
 public class FetchEpisodesTask implements Runnable {
     private static final String TAG = FetchEpisodesTask.class.getSimpleName();

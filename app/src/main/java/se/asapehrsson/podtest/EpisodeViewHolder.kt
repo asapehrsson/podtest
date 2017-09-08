@@ -10,6 +10,8 @@ import com.bumptech.glide.Glide
 
 class EpisodeViewHolder(val container: android.view.View, private val context: Context) : EpisodeContract.View, RecyclerView.ViewHolder(container) {
 
+    //TODO setter och getter?
+
     //Optional fields
     @BindView(R.id.icon_image)
     @JvmField
@@ -40,15 +42,15 @@ class EpisodeViewHolder(val container: android.view.View, private val context: C
         }
     }
 
-    override fun setFirstRow(text: String) {
+    override fun setFirstRow(text: String?) {
         firstRow.text = text
     }
 
-    override fun setSecondRow(text: String) {
+    override fun setSecondRow(text: String?) {
         secondRow.text = text
     }
 
-    override fun setThumbnail(url: String) {
+    override fun setThumbnail(url: String?) {
         if (episodeImage != null) {
             Glide.with(context)
                     .load(url)
