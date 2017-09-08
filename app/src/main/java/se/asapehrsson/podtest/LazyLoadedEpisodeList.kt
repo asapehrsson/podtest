@@ -1,5 +1,6 @@
 package se.asapehrsson.podtest
 
+import android.util.SparseArray
 import android.view.View
 import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.data.Episodes
@@ -8,8 +9,8 @@ import se.asapehrsson.podtest.data.Pagination
 class LazyLoadedEpisodeList : Result {
 
     private var pagination: Pagination? = null
-    private var episodes = ArrayList<Episode>()
-    private var changeListener: ChangeListener<List<Episode>>? = null
+    private var episodes = SparseArray<Episode>()
+    private var changeListener: ChangeListener<SparseArray<Episode>>? = null
     private var isLoading: Boolean = false
 
     init {
@@ -18,8 +19,8 @@ class LazyLoadedEpisodeList : Result {
 
     fun getEpisode(index: Int): Episode? {
         var result: Episode? = null
-        if (index < episodes.size) {
-            result = episodes[index]
+        if (index < episodes.size()) {
+            result = episodes.valueAt(index)
         }
         return result
     }
@@ -29,24 +30,29 @@ class LazyLoadedEpisodeList : Result {
         if (!isLoading) {
             isLoading = true
             if (pagination == null) {
-                Thread(
-                        FetchEpisodesTask(this, START_URL)).start()
+                Thread(FetchEpisodesTask(this, START_URL)).start()
             } else if (pagination?.nextpage != null) {
-                Thread(
-                        FetchEpisodesTask(this, pagination!!.nextpage)).start()
+                Thread(FetchEpisodesTask(this, pagination!!.nextpage)).start()
             }
         }
     }
 
     val noOfLoadedItems: Int
-        get() = episodes.size
+        get() = episodes.size()
 
     val totalNoOfItems: Int
         get() = pagination?.totalhits ?: 0
 
     override fun onSuccess(value: Episodes) {
         pagination = value.pagination
-        episodes = ArrayList(value.episodes) //instead of addAll()
+        val offset = (pagination!!.page - 1) * 10
+
+        for (i in 0 until pagination!!.size) {
+            episodes.put(offset + i, value.episodes!![i])
+        }
+
+        //episodes = ArrayList(value.episodes) //instead of addAll()
+
         isLoading = false
         changeListener?.onChange(episodes)
     }
@@ -64,7 +70,7 @@ class LazyLoadedEpisodeList : Result {
 
     }
 
-    fun setChangeListener(changeListener: ChangeListener<List<Episode>>?) {
+    fun setChangeListener(changeListener: ChangeListener<SparseArray<Episode>>?) {
 
         this.changeListener = changeListener
     }

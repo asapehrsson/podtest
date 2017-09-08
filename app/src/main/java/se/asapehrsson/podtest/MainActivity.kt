@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.SparseArray
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +15,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import se.asapehrsson.podtest.data.Episode
 
-class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<List<Episode>> {
+class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
 
     @BindView(R.id.recyclerview) internal lateinit var recyclerView: RecyclerView
     @BindView(R.id.player_container) internal lateinit var playerContainer: CardView
@@ -44,7 +45,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<List<Epi
         episodeDetailsBottomSheetDialog!!.setContentView(view)
     }
 
-    override fun onChange(event: List<Episode>) {
+    override fun onChange(event: SparseArray<Episode>) {
         runOnUiThread { adapter?.notifyDataSetChanged() }
     }
     private fun setupEpisodeList() {
