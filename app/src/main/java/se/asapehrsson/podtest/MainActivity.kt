@@ -1,7 +1,11 @@
 package se.asapehrsson.podtest
 
 import android.os.Bundle
+import android.os.Handler
 import android.support.design.widget.BottomSheetDialog
+import android.support.design.widget.CoordinatorLayout
+import android.support.design.widget.SwipeDismissBehavior
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
@@ -17,7 +21,8 @@ import se.asapehrsson.podtest.data.Episode
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
 
-    @BindView(R.id.recyclerview) internal lateinit var recyclerView: RecyclerView
+    @BindView(R.id.recycler_view_swipe_container) internal lateinit var recyclerViewSwipeContainer: SwipeRefreshLayout
+    @BindView(R.id.recycler_view) internal lateinit var recyclerView: RecyclerView
     @BindView(R.id.player_container) internal lateinit var playerContainer: CardView
     @BindView(R.id.episode_details) internal lateinit var episodeDetails: View
 
@@ -56,6 +61,13 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
+
+        recyclerViewSwipeContainer.setOnRefreshListener({
+            Handler().postDelayed({
+                recyclerViewSwipeContainer.setRefreshing(false)
+            }, 1000)
+        })
+
     }
 
     private fun setupMiniPlayer() {
@@ -68,26 +80,26 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
         showMiniPlayer(false)
 
         //Swipe to dismiss mini player
-//        val swipeDismissBehavior = SwipeDismissBehavior()
-//        swipeDismissBehavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_ANY)
-//        swipeDismissBehavior.setListener(object : SwipeDismissBehavior.OnDismissListener {
-//            override fun onDismiss(view: View) {
-//                episodeMiniPlayerPresenter!!.close()
-//
-//                //Restore miniplayer visibility and position
-//                val layoutParams = view.layoutParams as CoordinatorLayout.LayoutParams
-//                layoutParams.setMargins(0, 0, 0, 0)
-//                view.alpha = 1.0f
-//                showMiniPlayer(false)
-//            }
-//
-//            override fun onDragStateChanged(state: Int) {
-//
-//            }
-//        })
-//
-//        val coordinatorParams = playerContainer!!.layoutParams as CoordinatorLayout.LayoutParams
-//        coordinatorParams.behavior = swipeDismissBehavior
+        val swipeDismissBehavior = SwipeDismissBehavior<CardView>()
+        swipeDismissBehavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_ANY)
+        swipeDismissBehavior.setListener(object : SwipeDismissBehavior.OnDismissListener {
+            override fun onDismiss(view: View) {
+                episodeMiniPlayerPresenter!!.close()
+
+                //Restore miniplayer visibility and position
+                val layoutParams = view.layoutParams as CoordinatorLayout.LayoutParams
+                layoutParams.setMargins(0, 0, 0, 0)
+                view.alpha = 1.0f
+                showMiniPlayer(false)
+            }
+
+            override fun onDragStateChanged(state: Int) {
+
+            }
+        })
+
+        val coordinatorParams = playerContainer!!.layoutParams as CoordinatorLayout.LayoutParams
+        coordinatorParams.behavior = swipeDismissBehavior
     }
 
     override fun showInfo(episode: Episode) {
@@ -105,7 +117,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     private fun showMiniPlayer(show: Boolean) {
-        val layoutParams = recyclerView.layoutParams as ViewGroup.MarginLayoutParams
+        val layoutParams = recyclerViewSwipeContainer.layoutParams as ViewGroup.MarginLayoutParams
 
         if (show) {
             playerContainer.visibility = View.VISIBLE

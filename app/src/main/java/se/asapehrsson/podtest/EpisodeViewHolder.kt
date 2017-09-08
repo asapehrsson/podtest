@@ -29,13 +29,13 @@ class EpisodeViewHolder(val container: android.view.View, private val context: C
     init {
         ButterKnife.bind(this, container)
         container.setOnClickListener {
-            if (presenter != null) {
+            if (presenter != null && container.tag != null) {
                 presenter!!.itemClicked(container.tag, EpisodeContract.Source.CONTAINER)
             }
         }
         if (iconImage != null) {
             iconImage!!.setOnClickListener {
-                if (presenter != null) {
+                if (presenter != null && container.tag != null) {
                     presenter!!.itemClicked(container.tag, EpisodeContract.Source.ICON_IMAGE)
                 }
             }

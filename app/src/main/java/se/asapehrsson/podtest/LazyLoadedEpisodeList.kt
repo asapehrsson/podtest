@@ -71,12 +71,12 @@ class LazyLoadedEpisodeList : Result {
     }
 
     fun setChangeListener(changeListener: ChangeListener<SparseArray<Episode>>?) {
-
         this.changeListener = changeListener
     }
 
+    //Class constants
     companion object {
         //Start and end dates as variables
-        private val START_URL = "http://api.sr.se/api/v2/episodes/index?programid=2519&fromdate=2017-01-01&todate=2017-06-01&urltemplateid=3&audioquality=hi&format=json"
+        private val START_URL = "http://api.sr.se/api/v2/episodes/index?programid=2519&fromdate=2017-01-01&todate=2017-09-01&urltemplateid=3&audioquality=hi&format=json"
     }
 }
