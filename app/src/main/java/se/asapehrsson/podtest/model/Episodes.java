@@ -1,4 +1,4 @@
-package podtest.jiki.se.podtest.model;
+package se.asapehrsson.podtest.model;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package podtest.jiki.se.podtest;
+package se.asapehrsson.podtest;
 
 import java.io.IOException;
 

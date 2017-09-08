@@ -1,4 +1,4 @@
-package podtest.jiki.se.podtest;
+package se.asapehrsson.podtest;
 
 import android.util.Log;
 
@@ -11,21 +11,14 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import podtest.jiki.se.podtest.model.Episodes;
+import se.asapehrsson.podtest.model.Episodes;
 
 public class FetchEpisodesTask implements Runnable {
     private static final String TAG = FetchEpisodesTask.class.getSimpleName();
     private final Gson gson = new Gson();
+    private final Result result;
     private OkHttpClient httpClient;
     private String url;
-
-    private final Result result;
-
-    interface Result {
-        void onSuccess(Episodes episode);
-
-        void onFailed();
-    }
 
     public FetchEpisodesTask(Result result, String url) {
         this.result = result;
@@ -74,4 +67,5 @@ public class FetchEpisodesTask implements Runnable {
             }
         });
     }
+
 }

@@ -1,6 +1,6 @@
-package podtest.jiki.se.podtest.model;
+package se.asapehrsson.podtest.model;
 
-public class Broadcastfile {
+public class Playlist {
 
     private Integer duration;
     private String publishdateutc;
@@ -24,8 +24,10 @@ public class Broadcastfile {
         return url;
     }
 
+
     public String getStatkey() {
         return statkey;
     }
+
 
 }

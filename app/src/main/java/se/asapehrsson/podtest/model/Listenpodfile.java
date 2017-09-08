@@ -1,6 +1,6 @@
-package podtest.jiki.se.podtest.model;
+package se.asapehrsson.podtest.model;
 
-public class Downloadpodfile {
+public class Listenpodfile {
 
     private String title;
     private String description;
@@ -47,5 +47,4 @@ public class Downloadpodfile {
     public String getStatkey() {
         return statkey;
     }
-
 }
