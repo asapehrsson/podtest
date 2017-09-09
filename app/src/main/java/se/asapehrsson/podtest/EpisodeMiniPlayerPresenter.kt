@@ -1,12 +1,18 @@
 package se.asapehrsson.podtest
 
 import android.content.Context
+import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
+import android.util.Log
+import org.jetbrains.anko.runOnUiThread
 
 import se.asapehrsson.podtest.data.Episode
 
-class EpisodeMiniPlayerPresenter(private val context: Context) : EpisodeContract.Presenter {
+class EpisodeMiniPlayerPresenter(private val context: Context) : EpisodeContract.Presenter, MediaPlayer.OnInfoListener {
+    override fun onInfo(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     private var view: EpisodeContract.View? = null
     private var mediaPlayer: MediaPlayer? = null
@@ -25,10 +31,51 @@ class EpisodeMiniPlayerPresenter(private val context: Context) : EpisodeContract
 
     fun startPlayer() {
         try {
-            mediaPlayer = MediaPlayer.create(context, Uri.parse(episode!!.listenpodfile!!.url))
-            mediaPlayer!!.start()
+            close()
+            setIcon()
+            mediaPlayer = MediaPlayer();
+            mediaPlayer!!.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mediaPlayer!!.setOnCompletionListener {
+                //CLOSE
+            }
+            mediaPlayer!!.setOnPreparedListener {
+                setIcon()
+                Log.d("", "")
+            }
+            mediaPlayer!!.setOnSeekCompleteListener {
+                Log.d("", "")
+            }
+            mediaPlayer!!.setOnInfoListener(object : MediaPlayer.OnInfoListener {
+                override fun onInfo(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
+                    Log.d("", "")
+                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                }
+            })
+            mediaPlayer!!.setDataSource(context, Uri.parse(episode!!.listenpodfile!!.url));
+            mediaPlayer!!.prepare();
+            mediaPlayer!!.start();
+
+
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+
+    }
+
+    fun setIcon() {
+        var isActive: Boolean = mediaPlayer != null
+        context.runOnUiThread {
+            if (isActive) {
+                val playing = mediaPlayer?.isPlaying() ?: false
+                if (playing) {
+                    view?.setIcon(R.drawable.ic_play)
+                } else {
+                    view?.setIcon(R.drawable.ic_pause)
+                }
+
+            } else {
+                view?.setIcon(0)
+            }
         }
 
     }
@@ -39,11 +86,11 @@ class EpisodeMiniPlayerPresenter(private val context: Context) : EpisodeContract
 
             if (playing) {
                 mediaPlayer?.pause()
-                view?.setIcon(R.drawable.ic_play)
             } else {
                 mediaPlayer?.start()
-                view?.setIcon(R.drawable.ic_pause)
             }
+
+            setIcon()
         }
     }
 

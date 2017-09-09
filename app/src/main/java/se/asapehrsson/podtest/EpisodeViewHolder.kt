@@ -2,7 +2,9 @@ package se.asapehrsson.podtest
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
+import android.view.View
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
@@ -19,6 +21,9 @@ class EpisodeViewHolder(val container: android.view.View, private val context: C
     @BindView(R.id.episode_image)
     @JvmField
     var episodeImage: ImageView? = null
+    @BindView(R.id.buffering)
+    @JvmField
+    var buffering: ProgressBar? = null
 
     //Mandatory fields
     @BindView(R.id.first_line) lateinit var firstRow: TextView
@@ -59,8 +64,13 @@ class EpisodeViewHolder(val container: android.view.View, private val context: C
     }
 
     override fun setIcon(drawableResourceId: Int) {
-        if (iconImage != null) {
-            iconImage!!.setImageResource(drawableResourceId)
+        if (drawableResourceId == 0) {
+            buffering?.visibility = View.VISIBLE;
+            iconImage?.visibility = View.GONE;
+        } else {
+            buffering?.visibility = View.GONE;
+            iconImage?.visibility = View.VISIBLE;
+            iconImage?.setImageResource(drawableResourceId)
         }
     }
 

@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import butterknife.BindView
 import butterknife.ButterKnife
+import org.jetbrains.anko.doAsync
 import se.asapehrsson.podtest.data.Episode
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
@@ -73,7 +74,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     private fun setupMiniPlayer() {
         episodeMiniPlayerPresenter = EpisodeMiniPlayerPresenter(this)
 
-        LayoutInflater.from(ContextThemeWrapper(this, R.style.CardViewStyle)).inflate(R.layout.episode_listitem, playerContainer, true)
+        LayoutInflater.from(ContextThemeWrapper(this, R.style.CardViewStyle)).inflate(R.layout.miniplayer, playerContainer, true)
         miniPlayerViewHolder = EpisodeViewHolder(playerContainer, this)
         miniPlayerViewHolder?.setPresenter(episodeMiniPlayerPresenter as EpisodeMiniPlayerPresenter)
 
@@ -113,7 +114,9 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
         showMiniPlayer(true)
 
         episodeMiniPlayerPresenter?.update(episode, miniPlayerViewHolder)
-        episodeMiniPlayerPresenter?.startPlayer()
+        doAsync {
+            episodeMiniPlayerPresenter?.startPlayer()
+        }
     }
 
     private fun showMiniPlayer(show: Boolean) {
