@@ -9,88 +9,90 @@ import org.jetbrains.anko.runOnUiThread
 
 import se.asapehrsson.podtest.data.Episode
 
-class EpisodeMiniPlayerPresenter(private val context: Context) : EpisodeContract.Presenter, MediaPlayer.OnInfoListener {
+class MiniPlayerPresenter(private val context: Context) : PlayerContract.Presenter, MediaPlayer.OnInfoListener {
+
+
     override fun onInfo(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    private var view: EpisodeContract.View? = null
+    private var view: PlayerContract.View? = null
     private var mediaPlayer: MediaPlayer? = null
     private var episode: Episode? = null
 
-    override fun update(episode: Episode?, view: EpisodeContract.View?) {
+    override fun update(episode: Episode?, view: PlayerContract.View?) {
         this.view = view
         this.episode = episode
         if (episode != null && view != null) {
             view.setFirstRow(episode.title)
             view.setSecondRow(episode.description)
             view.setThumbnail(episode.imageurl)
-            view.setIcon(R.drawable.ic_pause)
+            view.setIconState(PlayerContract.State.BUFFERING)
         }
     }
 
-    fun startPlayer() {
+    override fun start() {
         try {
             close()
-            setIcon()
+            view?.setIconState(PlayerContract.State.BUFFERING)
             mediaPlayer = MediaPlayer();
-            mediaPlayer!!.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mediaPlayer!!.setOnCompletionListener {
+
+            initMediaPlayer()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun initMediaPlayer() {
+        mediaPlayer?.let {
+            it.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            it.setOnCompletionListener {
                 //CLOSE
             }
-            mediaPlayer!!.setOnPreparedListener {
-                setIcon()
+            it.setOnPreparedListener {
+                setVisibleState()
                 Log.d("", "")
             }
-            mediaPlayer!!.setOnSeekCompleteListener {
+            it.setOnSeekCompleteListener {
                 Log.d("", "")
             }
-            mediaPlayer!!.setOnInfoListener(object : MediaPlayer.OnInfoListener {
+            it.setOnInfoListener(object : MediaPlayer.OnInfoListener {
                 override fun onInfo(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
                     Log.d("", "")
                     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                 }
             })
-            mediaPlayer!!.setDataSource(context, Uri.parse(episode!!.listenpodfile!!.url));
-            mediaPlayer!!.prepare();
-            mediaPlayer!!.start();
-
-
-        } catch (e: Exception) {
-            e.printStackTrace()
+            it.setDataSource(context, Uri.parse(episode!!.listenpodfile!!.url))
+            it.prepare()
+            it.start()
         }
-
     }
 
-    fun setIcon() {
+    fun setVisibleState() {
         var isActive: Boolean = mediaPlayer != null
         context.runOnUiThread {
             if (isActive) {
-                val playing = mediaPlayer?.isPlaying() ?: false
+                val playing = mediaPlayer?.isPlaying ?: false
                 if (playing) {
-                    view?.setIcon(R.drawable.ic_play)
+                    view?.setIconState(PlayerContract.State.PLAYING)
                 } else {
-                    view?.setIcon(R.drawable.ic_pause)
+                    view?.setIconState(PlayerContract.State.PAUSED)
                 }
 
             } else {
-                view?.setIcon(0)
+                view?.setIconState(PlayerContract.State.BUFFERING)
             }
         }
-
     }
 
-    override fun itemClicked(tag: Any, request: EpisodeContract.Request) {
-        if (request == EpisodeContract.Request.SHOW_DETAILS && mediaPlayer != null) {
-            val playing = mediaPlayer?.isPlaying() ?: false
-
-            if (playing) {
-                mediaPlayer?.pause()
+    override fun itemClicked() {
+        mediaPlayer?.let {
+            if (it.isPlaying) {
+                it.pause()
             } else {
-                mediaPlayer?.start()
+                it.start()
             }
-
-            setIcon()
+            setVisibleState()
         }
     }
 

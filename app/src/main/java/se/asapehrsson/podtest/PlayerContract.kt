@@ -10,23 +10,26 @@ interface PlayerContract {
 
         fun setThumbnail(url: String?)
 
-        fun setIcon(drawableResourceId: Int)
+        fun setIconState(state: State)
 
-        fun setTag(tag: Any)
-
-        fun setPresenter(presenter: PlayerContract.Presenter)
+        var presenter: PlayerContract.Presenter?
     }
 
     interface Presenter {
         fun update(episode: Episode?, view: View?)
 
-        fun itemClicked(tag: Any, request: Request)
+        fun start()
 
-        fun close();
+        fun itemClicked()
+
+        fun close()
     }
 
-    enum class Request {
-        PLAY_EPISODE,
-        SHOW_DETAILS
+    enum class State {
+        PLAYING,
+        PAUSED,
+        BUFFERING,
+        ENDED,
+        ERROR
     }
 }

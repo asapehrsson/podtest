@@ -11,8 +11,6 @@ import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.SparseArray
-import android.view.ContextThemeWrapper
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import butterknife.BindView
@@ -24,12 +22,11 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
 
     @BindView(R.id.recycler_view_swipe_container) internal lateinit var recyclerViewSwipeContainer: SwipeRefreshLayout
     @BindView(R.id.recycler_view) internal lateinit var recyclerView: RecyclerView
-    @BindView(R.id.player_container) internal lateinit var playerContainer: CardView
+    @BindView(R.id.player) internal lateinit var playerView: PlayerView
     @BindView(R.id.episode_details) internal lateinit var episodeDetails: View
 
     private var adapter: PagedEpisodesAdapter? = null
-    private var miniPlayerViewHolder: EpisodeViewHolder? = null
-    private var episodeMiniPlayerPresenter: EpisodeMiniPlayerPresenter? = null
+    private var miniPlayerPresenter: PlayerContract.Presenter? = null
     private var episodeDetailsPresenter: EpisodeDetailsPresenter? = null
     private var episodeDetailsBottomSheetDialog: BottomSheetDialog? = null
 
@@ -43,6 +40,10 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
         setupDetailsView()
     }
 
+    override fun onChange(event: SparseArray<Episode>) {
+        runOnUiThread { adapter?.notifyDataSetChanged() }
+    }
+
     private fun setupDetailsView() {
         val view = this.layoutInflater.inflate(R.layout.episode_details, null)
         episodeDetailsPresenter = EpisodeDetailsPresenter(EpisodeViewHolder(view, this))
@@ -51,9 +52,6 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
         episodeDetailsBottomSheetDialog!!.setContentView(view)
     }
 
-    override fun onChange(event: SparseArray<Episode>) {
-        runOnUiThread { adapter?.notifyDataSetChanged() }
-    }
     private fun setupEpisodeList() {
         val lazyLoadedEpisodeList = LazyLoadedEpisodeList()
 
@@ -72,11 +70,8 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     private fun setupMiniPlayer() {
-        episodeMiniPlayerPresenter = EpisodeMiniPlayerPresenter(this)
-
-        LayoutInflater.from(ContextThemeWrapper(this, R.style.CardViewStyle)).inflate(R.layout.miniplayer, playerContainer, true)
-        miniPlayerViewHolder = EpisodeViewHolder(playerContainer, this)
-        miniPlayerViewHolder?.setPresenter(episodeMiniPlayerPresenter as EpisodeMiniPlayerPresenter)
+        miniPlayerPresenter = MiniPlayerPresenter(this)
+        playerView.presenter = miniPlayerPresenter
 
         showMiniPlayer(false)
 
@@ -85,7 +80,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
         swipeDismissBehavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_ANY)
         swipeDismissBehavior.setListener(object : SwipeDismissBehavior.OnDismissListener {
             override fun onDismiss(view: View) {
-                episodeMiniPlayerPresenter!!.close()
+                miniPlayerPresenter!!.close()
 
                 //Restore miniplayer visibility and position
                 val layoutParams = view.layoutParams as CoordinatorLayout.LayoutParams
@@ -99,7 +94,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
             }
         })
 
-        val coordinatorParams = playerContainer!!.layoutParams as CoordinatorLayout.LayoutParams
+        val coordinatorParams = playerView.layoutParams as CoordinatorLayout.LayoutParams
         coordinatorParams.behavior = swipeDismissBehavior
     }
 
@@ -109,13 +104,13 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     override fun play(episode: Episode) {
-        episodeMiniPlayerPresenter?.close()
-
-        showMiniPlayer(true)
-
-        episodeMiniPlayerPresenter?.update(episode, miniPlayerViewHolder)
-        doAsync {
-            episodeMiniPlayerPresenter?.startPlayer()
+        miniPlayerPresenter?.let {
+            it.close()
+            showMiniPlayer(true)
+            it.update(episode, playerView)
+            doAsync {
+                it.start()
+            }
         }
     }
 
@@ -123,10 +118,10 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
         val layoutParams = recyclerViewSwipeContainer.layoutParams as ViewGroup.MarginLayoutParams
 
         if (show) {
-            playerContainer.visibility = View.VISIBLE
-            layoutParams.bottomMargin = playerContainer!!.height
+            playerView.visibility = View.VISIBLE
+            layoutParams.bottomMargin = playerView.height
         } else {
-            playerContainer.visibility = View.INVISIBLE
+            playerView.visibility = View.INVISIBLE
             layoutParams.bottomMargin = 0
         }
         recyclerView.layoutParams = layoutParams
@@ -134,6 +129,6 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
 
     override fun onPause() {
         super.onPause()
-        episodeMiniPlayerPresenter?.close()
+        miniPlayerPresenter?.close()
     }
 }

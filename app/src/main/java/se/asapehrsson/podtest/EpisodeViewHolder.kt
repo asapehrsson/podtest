@@ -63,7 +63,7 @@ class EpisodeViewHolder(val container: android.view.View, private val context: C
         if (episodeImage != null) {
             Glide.with(context)
                     .load(url)
-                    .into(episodeImage!!)
+                    .into(episodeImage)
         }
     }
 
