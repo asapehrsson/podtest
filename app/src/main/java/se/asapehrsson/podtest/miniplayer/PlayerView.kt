@@ -1,4 +1,4 @@
-package se.asapehrsson.podtest
+package se.asapehrsson.podtest.miniplayer
 
 import android.content.Context
 import android.support.v7.widget.CardView
@@ -11,6 +11,7 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import com.bumptech.glide.Glide
+import se.asapehrsson.podtest.R
 
 class PlayerView : CardView, PlayerContract.View {
     @BindView(R.id.first_line) lateinit var firstRow: TextView

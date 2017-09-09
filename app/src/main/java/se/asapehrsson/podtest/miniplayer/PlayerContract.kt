@@ -1,4 +1,4 @@
-package se.asapehrsson.podtest
+package se.asapehrsson.podtest.miniplayer
 
 import se.asapehrsson.podtest.data.Episode
 
@@ -12,7 +12,7 @@ interface PlayerContract {
 
         fun setIconState(state: State)
 
-        var presenter: PlayerContract.Presenter?
+        var presenter: Presenter?
     }
 
     interface Presenter {

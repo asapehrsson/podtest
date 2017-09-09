@@ -1,4 +1,4 @@
-package se.asapehrsson.podtest
+package se.asapehrsson.podtest.miniplayer
 
 import android.content.Context
 import android.media.AudioManager
@@ -9,7 +9,7 @@ import org.jetbrains.anko.runOnUiThread
 
 import se.asapehrsson.podtest.data.Episode
 
-class MiniPlayerPresenter(private val context: Context) : PlayerContract.Presenter, MediaPlayer.OnInfoListener {
+class PlayerPresenter(private val context: Context) : PlayerContract.Presenter, MediaPlayer.OnInfoListener {
 
 
     override fun onInfo(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {

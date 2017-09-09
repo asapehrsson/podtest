@@ -17,6 +17,9 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import org.jetbrains.anko.doAsync
 import se.asapehrsson.podtest.data.Episode
+import se.asapehrsson.podtest.miniplayer.PlayerPresenter
+import se.asapehrsson.podtest.miniplayer.PlayerContract
+import se.asapehrsson.podtest.miniplayer.PlayerView
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
 
@@ -70,7 +73,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     private fun setupMiniPlayer() {
-        miniPlayerPresenter = MiniPlayerPresenter(this)
+        miniPlayerPresenter = PlayerPresenter(this)
         playerView.presenter = miniPlayerPresenter
 
         showMiniPlayer(false)
