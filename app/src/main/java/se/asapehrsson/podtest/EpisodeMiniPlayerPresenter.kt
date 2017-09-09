@@ -80,8 +80,8 @@ class EpisodeMiniPlayerPresenter(private val context: Context) : EpisodeContract
 
     }
 
-    override fun itemClicked(tag: Any, source: EpisodeContract.Source) {
-        if (source == EpisodeContract.Source.ICON_IMAGE && mediaPlayer != null) {
+    override fun itemClicked(tag: Any, request: EpisodeContract.Request) {
+        if (request == EpisodeContract.Request.SHOW_DETAILS && mediaPlayer != null) {
             val playing = mediaPlayer?.isPlaying() ?: false
 
             if (playing) {

@@ -17,8 +17,8 @@ class EpisodeListViewPresenter(private val episodeViewer: EpisodeViewer) : Episo
         }
     }
 
-    override fun itemClicked(tag: Any, source: EpisodeContract.Source) {
-        if (source == EpisodeContract.Source.ICON_IMAGE) {
+    override fun itemClicked(tag: Any, request: EpisodeContract.Request) {
+        if (request == EpisodeContract.Request.SHOW_DETAILS) {
             episodeViewer.showInfo(tag as Episode)
         } else {
             episodeViewer.play(tag as Episode)

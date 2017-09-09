@@ -2,8 +2,7 @@ package se.asapehrsson.podtest
 
 import se.asapehrsson.podtest.data.Episode
 
-
-interface EpisodeContract {
+interface PlayerContract {
     interface View {
         fun setFirstRow(text: String?)
 
@@ -15,7 +14,7 @@ interface EpisodeContract {
 
         fun setTag(tag: Any)
 
-        fun setPresenter(presenter: EpisodeContract.Presenter)
+        fun setPresenter(presenter: PlayerContract.Presenter)
     }
 
     interface Presenter {

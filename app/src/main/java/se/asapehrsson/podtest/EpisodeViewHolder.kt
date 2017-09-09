@@ -18,9 +18,11 @@ class EpisodeViewHolder(val container: android.view.View, private val context: C
     @BindView(R.id.icon_image)
     @JvmField
     var iconImage: ImageView? = null
+
     @BindView(R.id.episode_image)
     @JvmField
     var episodeImage: ImageView? = null
+
     @BindView(R.id.buffering)
     @JvmField
     var buffering: ProgressBar? = null
@@ -34,16 +36,18 @@ class EpisodeViewHolder(val container: android.view.View, private val context: C
     init {
         ButterKnife.bind(this, container)
         container.setOnClickListener {
-            if (presenter != null && container.tag != null) {
-                presenter!!.itemClicked(container.tag, EpisodeContract.Source.CONTAINER)
+            container.tag?.let { handleClick(EpisodeContract.Request.PLAY_EPISODE) }
+        }
+        iconImage?.let {
+            it.setOnClickListener {
+                container.tag?.let { handleClick(EpisodeContract.Request.SHOW_DETAILS) }
             }
         }
-        if (iconImage != null) {
-            iconImage!!.setOnClickListener {
-                if (presenter != null && container.tag != null) {
-                    presenter!!.itemClicked(container.tag, EpisodeContract.Source.ICON_IMAGE)
-                }
-            }
+    }
+
+    private fun handleClick(request: EpisodeContract.Request) {
+        presenter?.let {
+            it.itemClicked(container.tag, request)
         }
     }
 
