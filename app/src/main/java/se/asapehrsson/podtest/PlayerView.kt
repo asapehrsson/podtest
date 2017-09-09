@@ -42,9 +42,7 @@ class PlayerView : CardView, PlayerContract.View {
     private fun init() {
         ButterKnife.bind(this)
         iconImage.setOnClickListener {
-            presenter?.let {
-                it.itemClicked()
-            }
+            presenter?.itemClicked()
         }
     }
 

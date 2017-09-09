@@ -16,7 +16,7 @@ interface PlayerContract {
     }
 
     interface Presenter {
-        fun update(episode: Episode?, view: View?)
+        fun update(episode: Episode, view: View)
 
         fun start()
 

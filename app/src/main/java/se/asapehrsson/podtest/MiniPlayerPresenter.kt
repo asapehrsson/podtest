@@ -20,14 +20,15 @@ class MiniPlayerPresenter(private val context: Context) : PlayerContract.Present
     private var mediaPlayer: MediaPlayer? = null
     private var episode: Episode? = null
 
-    override fun update(episode: Episode?, view: PlayerContract.View?) {
+    override fun update(episode: Episode, view: PlayerContract.View) {
         this.view = view
         this.episode = episode
-        if (episode != null && view != null) {
-            view.setFirstRow(episode.title)
-            view.setSecondRow(episode.description)
-            view.setThumbnail(episode.imageurl)
-            view.setIconState(PlayerContract.State.BUFFERING)
+
+        with(view) {
+            setFirstRow(episode.title)
+            setSecondRow(episode.description)
+            setThumbnail(episode.imageurl)
+            setIconState(PlayerContract.State.BUFFERING)
         }
     }
 
