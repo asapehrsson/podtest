@@ -19,8 +19,8 @@ import butterknife.ButterKnife
 import org.jetbrains.anko.doAsync
 import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.details.DetailsView
-import se.asapehrsson.podtest.miniplayer.PlayerPresenter
 import se.asapehrsson.podtest.miniplayer.PlayerContract
+import se.asapehrsson.podtest.miniplayer.PlayerPresenter
 import se.asapehrsson.podtest.miniplayer.PlayerView
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
@@ -112,13 +112,13 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     override fun showInfo(episode: Episode) {
-       // Log.e("---------", "+++++++++++++++ " +  bottomSheet.state);
-        when ( bottomSheet.state) {
+        // Log.e("---------", "+++++++++++++++ " +  bottomSheet.state);
+        when (bottomSheet.state) {
             BottomSheetBehavior.STATE_EXPANDED -> {
-                bottomSheet.state =  BottomSheetBehavior.STATE_COLLAPSED
-                bottomSheet.state =  BottomSheetBehavior.STATE_EXPANDED
+                bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
+                bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
             }
-            BottomSheetBehavior.STATE_COLLAPSED -> bottomSheet.state =  BottomSheetBehavior.STATE_EXPANDED
+            BottomSheetBehavior.STATE_COLLAPSED -> bottomSheet.state = BottomSheetBehavior.STATE_EXPANDED
 
         }
         episodeDetailsPresenter?.update(episode)

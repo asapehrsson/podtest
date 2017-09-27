@@ -1,13 +1,11 @@
 package se.asapehrsson.podtest.miniplayer
 
 import android.content.Context
-import android.media.AudioManager
 import android.media.MediaPlayer
-import android.net.Uri
-import android.util.Log
 import org.jetbrains.anko.runOnUiThread
-
 import se.asapehrsson.podtest.data.Episode
+import se.asapehrsson.podtest.player.IMediaPlayer
+import se.asapehrsson.podtest.player.SimpleMediaPlayer
 
 class PlayerPresenter(private val context: Context) : PlayerContract.Presenter, MediaPlayer.OnInfoListener {
 
@@ -17,7 +15,7 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter, 
     }
 
     private var view: PlayerContract.View? = null
-    private var mediaPlayer: MediaPlayer? = null
+    private var mediaPlayer: IMediaPlayer? = null
     private var episode: Episode? = null
 
     override fun update(episode: Episode, view: PlayerContract.View) {
@@ -35,37 +33,15 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter, 
     override fun start() {
         try {
             close()
-            view?.setIconState(PlayerContract.State.BUFFERING)
-            mediaPlayer = MediaPlayer();
+            //view?.setIconState(PlayerContract.State.BUFFERING)
+            mediaPlayer = SimpleMediaPlayer(context)
+            (mediaPlayer as SimpleMediaPlayer).loadAndPlay(episode!!.listenpodfile!!.url!!)
+            context.runOnUiThread {
+                view?.setIconState(PlayerContract.State.PLAYING)
+            }
 
-            initMediaPlayer()
         } catch (e: Exception) {
             e.printStackTrace()
-        }
-    }
-
-    private fun initMediaPlayer() {
-        mediaPlayer?.let {
-            it.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            it.setOnCompletionListener {
-                //CLOSE
-            }
-            it.setOnPreparedListener {
-                setVisibleState()
-                Log.d("", "")
-            }
-            it.setOnSeekCompleteListener {
-                Log.d("", "")
-            }
-            it.setOnInfoListener(object : MediaPlayer.OnInfoListener {
-                override fun onInfo(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
-                    Log.d("", "")
-                    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                }
-            })
-            it.setDataSource(context, Uri.parse(episode!!.listenpodfile!!.url))
-            it.prepare()
-            it.start()
         }
     }
 
@@ -91,7 +67,7 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter, 
             if (it.isPlaying) {
                 it.pause()
             } else {
-                it.start()
+                it.play()
             }
             setVisibleState()
         }

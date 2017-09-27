@@ -37,6 +37,7 @@ class DetailsView : LinearLayout, EpisodeContract.View {
     private fun init() {
         ButterKnife.bind(this)
     }
+
     override fun setFirstRow(text: String?) {
         firstRow.text = text
     }
