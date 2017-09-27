@@ -6,6 +6,8 @@ import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
+import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.dash.DashMediaSource
 import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource
@@ -13,6 +15,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+
 
 /**
  * Created by aasapehrsson on 2017-09-27.
@@ -27,7 +30,8 @@ class ExoMediaPlayer(private val context: Context) : IMediaPlayer {
     private var eventLogger: EventLogger? = null
 
     private fun initializePlayer() {
-        if (player != null) {
+        if (player == null) {
+            //var trackSelector :
             // a factory to create an AdaptiveVideoTrackSelection
             val adaptiveTrackSelectionFactory = AdaptiveTrackSelection.Factory(DefaultBandwidthMeter())
             // using a DefaultTrackSelector with an adaptive video selection factory
@@ -47,11 +51,27 @@ class ExoMediaPlayer(private val context: Context) : IMediaPlayer {
         }
     }
 
-
     override fun loadAndPlay(url: String) {
         initializePlayer()
-        var mediaSource = buildMediaSource(Uri.parse("http://live-cdn.sr.se/pool2/p1/p1.isml/p1.mpd"));
+        var mediaSource: MediaSource
+        if (url.endsWith("mp3")) {
+            mediaSource = buildMediaSourceForMP3(Uri.parse(url))
+        } else {
+            mediaSource = buildMediaSourceForMPD(Uri.parse("http://live-cdn.sr.se/pool2/p1/p1.isml/p1.mpd"));
+        }
+
         player?.prepare(mediaSource, true, false);
+    }
+
+    private fun buildMediaSourceForMPD(uri: Uri): MediaSource {
+        val dataSourceFactory = DefaultHttpDataSourceFactory("ua", DefaultBandwidthMeter())
+        val dashChunkSourceFactory = DefaultDashChunkSource.Factory(dataSourceFactory)
+        return DashMediaSource(uri, dataSourceFactory, dashChunkSourceFactory, null, null)
+    }
+
+    private fun buildMediaSourceForMP3(uri: Uri): MediaSource {
+        val dataSourceFactory = DefaultHttpDataSourceFactory("ua", DefaultBandwidthMeter())
+        return ExtractorMediaSource(uri, dataSourceFactory, DefaultExtractorsFactory(), null, null)
     }
 
     override fun play() {
@@ -78,9 +98,5 @@ class ExoMediaPlayer(private val context: Context) : IMediaPlayer {
         return player?.playWhenReady ?: false
     }
 
-    private fun buildMediaSource(uri: Uri): MediaSource {
-        val dataSourceFactory = DefaultHttpDataSourceFactory("ua", DefaultBandwidthMeter())
-        val dashChunkSourceFactory = DefaultDashChunkSource.Factory(dataSourceFactory)
-        return DashMediaSource(uri, dataSourceFactory, dashChunkSourceFactory, null, null)
-    }
+
 }

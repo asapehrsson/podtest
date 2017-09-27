@@ -4,8 +4,8 @@ import android.content.Context
 import android.media.MediaPlayer
 import org.jetbrains.anko.runOnUiThread
 import se.asapehrsson.podtest.data.Episode
+import se.asapehrsson.podtest.player.ExoMediaPlayer
 import se.asapehrsson.podtest.player.IMediaPlayer
-import se.asapehrsson.podtest.player.SimpleMediaPlayer
 
 class PlayerPresenter(private val context: Context) : PlayerContract.Presenter, MediaPlayer.OnInfoListener {
 
@@ -34,8 +34,8 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter, 
         try {
             close()
             //view?.setIconState(PlayerContract.State.BUFFERING)
-            mediaPlayer = SimpleMediaPlayer(context)
-            (mediaPlayer as SimpleMediaPlayer).loadAndPlay(episode!!.listenpodfile!!.url!!)
+            mediaPlayer = ExoMediaPlayer(context)
+            (mediaPlayer as ExoMediaPlayer).loadAndPlay(episode!!.listenpodfile!!.url!!)
             context.runOnUiThread {
                 view?.setIconState(PlayerContract.State.PLAYING)
             }
