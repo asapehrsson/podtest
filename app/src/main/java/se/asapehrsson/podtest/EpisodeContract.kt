@@ -11,8 +11,6 @@ interface EpisodeContract {
 
         fun setThumbnail(url: String?)
 
-        fun setIcon(drawableResourceId: Int)
-
         fun setTag(tag: Any)
 
         fun setPresenter(presenter: EpisodeContract.Presenter)

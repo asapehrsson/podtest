@@ -2,7 +2,7 @@ package se.asapehrsson.podtest
 
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.BottomSheetDialog
+import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.SwipeDismissBehavior
 import android.support.v4.widget.SwipeRefreshLayout
@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +18,7 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import org.jetbrains.anko.doAsync
 import se.asapehrsson.podtest.data.Episode
+import se.asapehrsson.podtest.details.DetailsView
 import se.asapehrsson.podtest.miniplayer.PlayerPresenter
 import se.asapehrsson.podtest.miniplayer.PlayerContract
 import se.asapehrsson.podtest.miniplayer.PlayerView
@@ -26,12 +28,29 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     @BindView(R.id.recycler_view_swipe_container) internal lateinit var recyclerViewSwipeContainer: SwipeRefreshLayout
     @BindView(R.id.recycler_view) internal lateinit var recyclerView: RecyclerView
     @BindView(R.id.player) internal lateinit var playerView: PlayerView
-    @BindView(R.id.episode_details) internal lateinit var episodeDetails: View
+    @BindView(R.id.episode_details) internal lateinit var episodeDetailsView: DetailsView
 
     private var adapter: PagedEpisodesAdapter? = null
     private var miniPlayerPresenter: PlayerContract.Presenter? = null
     private var episodeDetailsPresenter: EpisodeDetailsPresenter? = null
-    private var episodeDetailsBottomSheetDialog: BottomSheetDialog? = null
+    // private var episodeDetailsBottomSheetDialog: BottomSheetDialog? = null
+
+    private val bottomSheet: BottomSheetBehavior<DetailsView> by lazy {
+        episodeDetailsPresenter = EpisodeDetailsPresenter(episodeDetailsView)
+        var value = BottomSheetBehavior.from(episodeDetailsView)
+        with(value) {
+            setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                    Log.e("MainActivity", "onSlide - slideOffset=" + slideOffset)
+                }
+
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    Log.e("MainActivity", "onStateChanged -  newState=" + newState)
+                }
+            })
+        }
+        value
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,19 +59,10 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
 
         setupEpisodeList()
         setupMiniPlayer()
-        setupDetailsView()
     }
 
     override fun onChange(event: SparseArray<Episode>) {
         runOnUiThread { adapter?.notifyDataSetChanged() }
-    }
-
-    private fun setupDetailsView() {
-        val view = this.layoutInflater.inflate(R.layout.episode_details, null)
-        episodeDetailsPresenter = EpisodeDetailsPresenter(EpisodeViewHolder(view, this))
-
-        episodeDetailsBottomSheetDialog = BottomSheetDialog(this)
-        episodeDetailsBottomSheetDialog!!.setContentView(view)
     }
 
     private fun setupEpisodeList() {
@@ -102,8 +112,16 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     override fun showInfo(episode: Episode) {
+       // Log.e("---------", "+++++++++++++++ " +  bottomSheet.state);
+        when ( bottomSheet.state) {
+            BottomSheetBehavior.STATE_EXPANDED -> {
+                bottomSheet.state =  BottomSheetBehavior.STATE_COLLAPSED
+                bottomSheet.state =  BottomSheetBehavior.STATE_EXPANDED
+            }
+            BottomSheetBehavior.STATE_COLLAPSED -> bottomSheet.state =  BottomSheetBehavior.STATE_EXPANDED
+
+        }
         episodeDetailsPresenter?.update(episode)
-        episodeDetailsBottomSheetDialog?.show()
     }
 
     override fun play(episode: Episode) {

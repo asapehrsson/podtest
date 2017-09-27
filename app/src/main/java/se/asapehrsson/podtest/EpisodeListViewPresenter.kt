@@ -12,7 +12,6 @@ class EpisodeListViewPresenter(private val episodeViewer: EpisodeViewer) : Episo
             view?.setFirstRow(episode.title)
             view?.setSecondRow(episode.description)
             view?.setThumbnail(episode.imageurl)
-            view?.setIcon(R.drawable.ic_info)
             view?.setTag(episode)
         }
     }

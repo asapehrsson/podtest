@@ -19,20 +19,19 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <se.asapehrsson.podtest.PlayerView
+    <se.asapehrsson.podtest.miniplayer.PlayerView
         android:id="@+id/player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         app:cardElevation="16dp" />
 
-    <include
+    <se.asapehrsson.podtest.details.DetailsView
         android:id="@+id/episode_details"
-        layout="@layout/episode_details"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:visibility="gone"
         app:behavior_hideable="true"
-        app:layout_behavior="android.support.design.widget.BottomSheetBehavior" />
+        app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
+        />
 </android.support.design.widget.CoordinatorLayout>
