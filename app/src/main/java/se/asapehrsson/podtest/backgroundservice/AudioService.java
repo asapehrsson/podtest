@@ -153,6 +153,8 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
         } catch (IOException e) {
         }
+
+
     }
 
     @Override
@@ -252,6 +254,8 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         }
         mediaPlayer.setVolume(1.0f, 1.0f);
+
+
     }
 
     private void initMediaSession() {

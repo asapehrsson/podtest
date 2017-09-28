@@ -55,7 +55,7 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter {
         }
     }
 
-    override fun itemClicked() {
+    override fun event(source: PlayerContract.Source, arg: Int) {
         mediaPlayer?.let {
             if (it.isPlaying) {
                 it.pause()

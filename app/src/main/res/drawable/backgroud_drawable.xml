@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--  Bottom to top  -->
+    <item android:id="@+id/gradient_layer_bottom">
+        <shape>
+            <gradient
+                android:angle="315"
+                android:centerColor="#88ffffff"
+                android:centerX="0.8"
+                android:endColor="#00000000"
+                android:startColor="#E0ffffff" />
+        </shape>
+    </item>
+
+</layer-list>

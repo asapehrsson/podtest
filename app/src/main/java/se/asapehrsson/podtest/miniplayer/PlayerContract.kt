@@ -12,6 +12,8 @@ interface PlayerContract {
 
         fun setIconState(state: State)
 
+        fun setProgress(progress: Int, max: Int)
+
         var presenter: Presenter?
     }
 
@@ -21,7 +23,7 @@ interface PlayerContract {
 
         fun start()
 
-        fun itemClicked()
+        fun event(source: Source, arg: Int = 0)
 
         fun close()
     }
@@ -32,5 +34,14 @@ interface PlayerContract {
         BUFFERING,
         ENDED,
         ERROR
+    }
+
+    enum class Source {
+        PLAY_PAUSE,
+        NEXT,
+        PREV,
+        CLOSE,
+        SEEK_START,
+        SEEK_DONE
     }
 }

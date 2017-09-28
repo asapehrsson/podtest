@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="@color/cardBackground"
-              android:orientation="vertical">
+    android:orientation="vertical">
 
     <android.support.v4.widget.Space
         android:layout_width="wrap_content"
-        android:layout_height="48sp"/>
+        android:layout_height="48sp" />
 
     <TextView
         android:id="@+id/first_line"
@@ -18,12 +18,11 @@
         android:layout_marginRight="16dp"
         android:ellipsize="end"
         android:textSize="20sp"
-        tools:text="First line"
-        />
+        tools:text="First line" />
 
     <android.support.v4.widget.Space
         android:layout_width="wrap_content"
-        android:layout_height="14sp"/>
+        android:layout_height="14sp" />
 
     <TextView
         android:id="@+id/second_line"
@@ -32,11 +31,10 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:textSize="14sp"
-        tools:text="@string/lorem_ipsum"
-        />
+        tools:text="@string/lorem_ipsum" />
 
     <android.support.v4.widget.Space
         android:layout_width="wrap_content"
-        android:layout_height="64sp"/>
+        android:layout_height="64sp" />
 
 </LinearLayout>

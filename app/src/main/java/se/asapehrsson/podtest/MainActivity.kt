@@ -129,6 +129,10 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
             (miniPlayerPresenter as MediaPlayerPresenter).init(mediaController!!)
         }
 
+        //enableSwipeToDismiss()
+    }
+
+    private fun enableSwipeToDismiss() {
         //Swipe to dismiss mini player
         val swipeDismissBehavior = SwipeDismissBehavior<CardView>()
         swipeDismissBehavior.setSwipeDirection(SwipeDismissBehavior.SWIPE_DIRECTION_ANY)

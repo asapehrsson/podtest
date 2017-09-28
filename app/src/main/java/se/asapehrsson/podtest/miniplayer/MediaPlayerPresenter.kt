@@ -90,16 +90,22 @@ class MediaPlayerPresenter() : PlayerContract.Presenter {
         }
     }
 
-    override fun itemClicked() {
-        if (currentState == STATE_PAUSED) {
-            mediaController?.transportControls?.play()
-            currentState = STATE_PLAYING
-        } else {
-            if (mediaController?.playbackState?.state == PlaybackStateCompat.STATE_PLAYING) {
-                mediaController?.transportControls?.pause()
-            }
+    override fun event(source: PlayerContract.Source, arg: Int) {
+        when (source) {
+            PlayerContract.Source.PLAY_PAUSE -> {
+                if (currentState == STATE_PAUSED) {
+                    mediaController?.transportControls?.play()
+                    currentState = STATE_PLAYING
+                } else {
+                    if (mediaController?.playbackState?.state == PlaybackStateCompat.STATE_PLAYING) {
+                        mediaController?.transportControls?.pause()
+                    }
 
-            currentState = STATE_PAUSED
+                    currentState = STATE_PAUSED
+                }
+            }
+            PlayerContract.Source.SEEK_START -> mediaController?.transportControls?.pause()
+            PlayerContract.Source.SEEK_DONE -> mediaController?.transportControls?.play()
         }
     }
 
