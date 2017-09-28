@@ -64,6 +64,15 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         }
 
         @Override
+        public void onStop() {
+            super.onStop();
+            setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED);
+
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+
+        @Override
         public void onPlay() {
             super.onPlay();
             if (!successfullyRetrievedAudioFocus()) {
@@ -111,7 +120,6 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             super.onSkipToQueueItem(id);
             MediaDescriptionCompat i = mediaQueue.get(0).getDescription();
             loadAndPlay(i);
-
         }
 
         @Override
@@ -127,6 +135,9 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
 
     private void loadAndPlay(MediaDescriptionCompat mediaDescription) {
         try {
+            if (mediaPlayer == null){
+                initMediaPlayer();
+            }
 
             Uri uri = Uri.parse(mediaDescription.getMediaId());
             try {
@@ -139,6 +150,7 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             }
 
             setMediaSessionMetadata(mediaDescription);
+            setMediaPlaybackState(PlaybackStateCompat.STATE_NONE);
 
         } catch (IOException e) {
             return;

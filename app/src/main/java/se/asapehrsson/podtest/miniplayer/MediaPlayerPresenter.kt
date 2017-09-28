@@ -1,7 +1,7 @@
 package se.asapehrsson.podtest.miniplayer
 
-import android.net.Uri
-import android.support.v4.media.MediaDescriptionCompat
+import android.media.MediaMetadata
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -41,9 +41,17 @@ class MediaPlayerPresenter() : PlayerContract.Presenter {
                     currentState = STATE_PAUSED
                     view?.setIconState(PlayerContract.State.PAUSED)
                 }
+                PlaybackStateCompat.STATE_NONE ->{
+                    mediaController?.metadata?.let {
+                        var desc = it.description
+                        view!!.setFirstRow(desc?.title?.toString())
+                        view!!.setSecondRow(desc?.subtitle?.toString())
+                        view!!.setThumbnail(desc?.iconUri?.toString())
+                        view!!.setIconState(PlayerContract.State.PAUSED)
+                    }
+                }
             }
 
-            var r = mediaController?.queue
             Log.d("", "")
         }
     }
@@ -59,29 +67,17 @@ class MediaPlayerPresenter() : PlayerContract.Presenter {
         this.view = view
         this.episode = episode
 
-        with(view) {
-            setFirstRow(episode.title)
-            setSecondRow(episode.description)
-            setThumbnail(episode.imageurl)
-            setIconState(PlayerContract.State.PAUSED)
-        }
+//        with(view) {
+//            setFirstRow(episode.title)
+//            setSecondRow(episode.description)
+//            setThumbnail(episode.imageurl)
+//            setIconState(PlayerContract.State.PAUSED)
+//        }
     }
 
-    override fun start() {
+    override fun play(id: Int) {
         try {
             episode?.let {
-
-                val description = MediaDescriptionCompat.Builder()
-
-                        .setMediaId(episode?.listenpodfile?.url ?: "")
-                        .setTitle(episode?.title)
-                        .setSubtitle(episode?.description)
-                        .setIconUri(Uri.parse(episode?.imageurl))
-                        //.setMediaUri()
-                        .build()
-                mediaController?.addQueueItem(description)
-                //mediaController?.transportControls?.play()
-
                 mediaController?.transportControls?.skipToQueueItem(1234L)
                 mediaController?.sendCommand(AudioService.COMMAND_EXAMPLE, null, null)
             }
@@ -106,6 +102,7 @@ class MediaPlayerPresenter() : PlayerContract.Presenter {
             }
             PlayerContract.Source.SEEK_START -> mediaController?.transportControls?.pause()
             PlayerContract.Source.SEEK_DONE -> mediaController?.transportControls?.play()
+            PlayerContract.Source.CLOSE -> mediaController?.transportControls?.stop()
         }
     }
 

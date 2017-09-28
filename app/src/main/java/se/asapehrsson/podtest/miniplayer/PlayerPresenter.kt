@@ -23,7 +23,7 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter {
         }
     }
 
-    override fun start() {
+    override fun play(id: Int) {
         try {
             close()
             //view?.setIconState(PlayerContract.State.BUFFERING)

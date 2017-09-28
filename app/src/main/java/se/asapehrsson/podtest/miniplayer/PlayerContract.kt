@@ -21,7 +21,7 @@ interface PlayerContract {
 
         fun update(episode: Episode, view: View)
 
-        fun start()
+        fun play(id: Int)
 
         fun event(source: Source, arg: Int = 0)
 
