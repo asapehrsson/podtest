@@ -22,19 +22,25 @@ public class MediaStyleHelper {
      * @return A pre-built notification with information from the given media session.
      */
     public static NotificationCompat.Builder from(Context context, MediaSessionCompat mediaSession) {
-        MediaControllerCompat controller = mediaSession.getController();
-        MediaMetadataCompat mediaMetadata = controller.getMetadata();
-        MediaDescriptionCompat description = mediaMetadata.getDescription();
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "");
-        builder
-                .setContentTitle(description.getTitle())
-                .setContentText(description.getSubtitle())
-                .setSubText(description.getDescription())
-                .setLargeIcon(description.getIconBitmap())
-                .setContentIntent(controller.getSessionActivity())
-                .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP))
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+        NotificationCompat.Builder builder = null;
+        try {
+            MediaControllerCompat controller = mediaSession.getController();
+            MediaMetadataCompat mediaMetadata = controller.getMetadata();
+            MediaDescriptionCompat description = mediaMetadata.getDescription();
+
+            builder = new NotificationCompat.Builder(context, "");
+            builder
+                    .setContentTitle(description.getTitle())
+                    .setContentText(description.getSubtitle())
+                    .setSubText(description.getDescription())
+                    .setLargeIcon(description.getIconBitmap())
+                    .setContentIntent(controller.getSessionActivity())
+                    .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(context, PlaybackStateCompat.ACTION_STOP))
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return builder;
     }
 

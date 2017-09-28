@@ -21,7 +21,7 @@ import android.view.ViewGroup
 import butterknife.BindView
 import butterknife.ButterKnife
 import org.jetbrains.anko.doAsync
-import se.asapehrsson.podtest.backgroundservice.BackgroundAudioService
+import se.asapehrsson.podtest.backgroundservice.AudioService
 import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.details.DetailsView
 import se.asapehrsson.podtest.miniplayer.MediaPlayerPresenter
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
             }
         }
         //TODO remove ComponentName
-        mediaBrowser = MediaBrowserCompat(this, ComponentName(this, BackgroundAudioService::class.java),
+        mediaBrowser = MediaBrowserCompat(this, ComponentName(this, AudioService::class.java),
                 mediaBrowserConnectionCallback,
                 null //optional bundle
         )
@@ -165,6 +165,8 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     override fun play(episode: Episode) {
+
+        //Prepare queue
         miniPlayerPresenter?.let {
             //it.close()
             showMiniPlayer(true)

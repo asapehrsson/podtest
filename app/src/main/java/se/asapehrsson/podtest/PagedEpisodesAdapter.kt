@@ -7,12 +7,8 @@ import android.view.ViewGroup
 
 
 class PagedEpisodesAdapter(private val lazyLoadedEpisodeList: LazyLoadedEpisodeList, private val context: Context, episodeViewer: EpisodeViewer) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    var presenter: EpisodeContract.Presenter
+    var presenter: EpisodeContract.Presenter = EpisodeListViewPresenter(episodeViewer)
     var firstTime: Boolean = true
-
-    init {
-        presenter = EpisodeListViewPresenter(episodeViewer)
-    }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val result: RecyclerView.ViewHolder
