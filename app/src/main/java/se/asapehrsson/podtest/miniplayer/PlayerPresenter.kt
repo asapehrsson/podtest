@@ -1,22 +1,19 @@
 package se.asapehrsson.podtest.miniplayer
 
 import android.content.Context
-import android.media.MediaPlayer
 import org.jetbrains.anko.runOnUiThread
 import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.player.ExoMediaPlayer
 import se.asapehrsson.podtest.player.IMediaPlayer
 
-class PlayerPresenter(private val context: Context) : PlayerContract.Presenter, MediaPlayer.OnInfoListener {
-
-
-    override fun onInfo(p0: MediaPlayer?, p1: Int, p2: Int): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
+class PlayerPresenter(private val context: Context) : PlayerContract.Presenter {
     private var view: PlayerContract.View? = null
     private var mediaPlayer: IMediaPlayer? = null
     private var episode: Episode? = null
+
+    override fun init() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     override fun update(episode: Episode, view: PlayerContract.View) {
         this.view = view

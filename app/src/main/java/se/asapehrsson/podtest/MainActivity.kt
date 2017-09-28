@@ -19,8 +19,8 @@ import butterknife.ButterKnife
 import org.jetbrains.anko.doAsync
 import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.details.DetailsView
+import se.asapehrsson.podtest.miniplayer.MediaPlayerPresenter
 import se.asapehrsson.podtest.miniplayer.PlayerContract
-import se.asapehrsson.podtest.miniplayer.PlayerPresenter
 import se.asapehrsson.podtest.miniplayer.PlayerView
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
@@ -83,7 +83,8 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     private fun setupMiniPlayer() {
-        miniPlayerPresenter = PlayerPresenter(this)
+        miniPlayerPresenter = MediaPlayerPresenter(this)
+        miniPlayerPresenter?.init()
         playerView.presenter = miniPlayerPresenter
 
         showMiniPlayer(false)
@@ -112,7 +113,6 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     override fun showInfo(episode: Episode) {
-        // Log.e("---------", "+++++++++++++++ " +  bottomSheet.state);
         when (bottomSheet.state) {
             BottomSheetBehavior.STATE_EXPANDED -> {
                 bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
 
     override fun play(episode: Episode) {
         miniPlayerPresenter?.let {
-            it.close()
+            //it.close()
             showMiniPlayer(true)
             it.update(episode, playerView)
             doAsync {
@@ -150,6 +150,6 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
 
     override fun onPause() {
         super.onPause()
-        miniPlayerPresenter?.close()
+        //miniPlayerPresenter?.close()
     }
 }
