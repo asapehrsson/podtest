@@ -1,7 +1,6 @@
 package se.asapehrsson.podtest
 
 import android.content.ComponentName
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.RemoteException
@@ -9,7 +8,6 @@ import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.SwipeDismissBehavior
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.support.v4.widget.SwipeRefreshLayout
@@ -27,9 +25,11 @@ import org.jetbrains.anko.doAsync
 import se.asapehrsson.podtest.backgroundservice.AudioService
 import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.details.DetailsView
+import se.asapehrsson.podtest.mediaqueue.setQueue
 import se.asapehrsson.podtest.miniplayer.MediaPlayerPresenter
 import se.asapehrsson.podtest.miniplayer.PlayerContract
 import se.asapehrsson.podtest.miniplayer.PlayerView
+
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
     private val TAG = MainActivity::class.java.simpleName
@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     private var adapter: PagedEpisodesAdapter? = null
     private var miniPlayerPresenter: PlayerContract.Presenter? = null
     private var episodeDetailsPresenter: EpisodeDetailsPresenter? = null
+    private val lazyLoadedEpisodeList = LazyLoadedEpisodeList()
     // private var episodeDetailsBottomSheetDialog: BottomSheetDialog? = null
 
     private var mediaBrowser: MediaBrowserCompat? = null
@@ -123,8 +124,6 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     private fun setupEpisodeList() {
-        val lazyLoadedEpisodeList = LazyLoadedEpisodeList()
-
         adapter = PagedEpisodesAdapter(lazyLoadedEpisodeList, this, this)
         lazyLoadedEpisodeList.setChangeListener(this)
 
@@ -189,26 +188,14 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     override fun play(episode: Episode) {
-
-        //Prepare queue
-
-        val description = MediaDescriptionCompat.Builder()
-
-                .setMediaId(episode.listenpodfile?.url ?: "")
-                .setTitle(episode.title)
-                .setSubtitle(episode.description)
-                .setIconUri(Uri.parse(episode.imageurl))
-                //.setMediaUri()
-                .build()
-        mediaController?.addQueueItem(description)
-
+        setQueue(mediaController, lazyLoadedEpisodeList)
 
         miniPlayerPresenter?.let {
             //it.close()
             showMiniPlayer(true)
             it.update(episode, playerView)
             doAsync {
-                it.play(0)
+                it.play(episode.id!!)
             }
         }
     }

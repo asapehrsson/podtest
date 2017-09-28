@@ -91,11 +91,25 @@ class PlayerView : CardView, PlayerContract.View {
     }
 
     override fun setProgress(progress: Int, max: Int) {
-        seekBar?.let {
+        seekBar.let {
             it.progress = progress
             it.max = max
         }
     }
+
+    override fun setSkipIcons(enablePrevious: Boolean, enableNext: Boolean) {
+        if (enablePrevious) {
+            previous.setImageResource(R.drawable.ic_previous)
+        } else {
+            previous.setImageResource(R.drawable.ic_previous_inactive)
+        }
+        if (enableNext) {
+            next.setImageResource(R.drawable.ic_next)
+        } else {
+            next.setImageResource(R.drawable.ic_next_inactive)
+        }
+    }
+
 
     override fun setIconState(state: PlayerContract.State) {
         var isBuffering = false;

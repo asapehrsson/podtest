@@ -10,7 +10,6 @@ import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -27,6 +26,7 @@ import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +41,7 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
     private static final String TAG = AudioService.class.getSimpleName();
     private MediaPlayer mediaPlayer;
     private MediaSessionCompat mediaSession;
+    private int currentQueueIndex = -1;
 
     private BroadcastReceiver noisyReceiver = new BroadcastReceiver() {
         @Override
@@ -60,7 +61,7 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         @Override
         public void onAddQueueItem(MediaDescriptionCompat description) {
             super.onAddQueueItem(description);
-            mediaQueue.add(new MediaSessionCompat.QueueItem(description, 1234567L));
+            mediaQueue.add(new MediaSessionCompat.QueueItem(description, Integer.parseInt(description.getMediaId())));
         }
 
         @Override
@@ -118,55 +119,65 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         @Override
         public void onSkipToQueueItem(long id) {
             super.onSkipToQueueItem(id);
-            MediaDescriptionCompat i = mediaQueue.get(0).getDescription();
-            loadAndPlay(i);
+            for (int i = 0; i < mediaQueue.size(); i++) {
+                MediaSessionCompat.QueueItem queueItem = mediaQueue.get(i);
+                if (queueItem.getQueueId() == id) {
+                    loadAndPlay(queueItem.getDescription());
+                    currentQueueIndex = i;
+                }
+            }
         }
 
         @Override
         public void onSkipToNext() {
             super.onSkipToNext();
+
+            int newIndex = currentQueueIndex + 1;
+            if (newIndex > 0 && newIndex < mediaQueue.size()) {
+                currentQueueIndex = newIndex;
+                loadAndPlay(mediaQueue.get(newIndex).getDescription());
+            }
         }
 
         @Override
         public void onSkipToPrevious() {
             super.onSkipToPrevious();
+            int newIndex = currentQueueIndex - 1;
+            if (newIndex > 0 && newIndex < mediaQueue.size()) {
+                currentQueueIndex = newIndex;
+                loadAndPlay(mediaQueue.get(newIndex).getDescription());
+            }
         }
     };
 
     private void loadAndPlay(MediaDescriptionCompat mediaDescription) {
         try {
-            if (mediaPlayer == null){
+            if (mediaPlayer == null) {
                 initMediaPlayer();
             }
 
-            Uri uri = Uri.parse(mediaDescription.getMediaId());
             try {
-                mediaPlayer.setDataSource(getApplicationContext(), uri);
+                mediaPlayer.setDataSource(getApplicationContext(), mediaDescription.getMediaUri());
 
             } catch (IllegalStateException e) {
                 mediaPlayer.release();
                 initMediaPlayer();
-                mediaPlayer.setDataSource(getApplicationContext(), uri);
+                mediaPlayer.setDataSource(getApplicationContext(), mediaDescription.getMediaUri());
             }
 
             setMediaSessionMetadata(mediaDescription);
             setMediaPlaybackState(PlaybackStateCompat.STATE_NONE);
 
-        } catch (IOException e) {
-            return;
-        }
-
-        try {
             mediaPlayer.prepare();
             mediaPlayer.start();
             if (!mediaSession.isActive()) {
                 mediaSession.setActive(true);
             }
             setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+
         } catch (IOException e) {
+            Log.d(TAG, "Got exception: " + e.getMessage());
         }
-
-
     }
 
     @Override
@@ -297,6 +308,7 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, mediaDescription.getTitle().toString());
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, mediaDescription.getSubtitle().toString());
+        metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaDescription.getIconUri().toString());
         metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, 1);
         metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 5);
 
@@ -336,7 +348,14 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         } else {
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE | PlaybackStateCompat.ACTION_PLAY);
         }
-        playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
+
+        if (currentQueueIndex > 0 && currentQueueIndex < mediaQueue.size()) {
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
+        }
+        if ((currentQueueIndex > -1) && (currentQueueIndex + 1) < mediaQueue.size()) {
+            playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
+        }
+
         playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
 
         mediaSession.setPlaybackState(playbackstateBuilder.build());

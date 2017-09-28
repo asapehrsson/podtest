@@ -12,6 +12,8 @@ interface PlayerContract {
 
         fun setIconState(state: State)
 
+        fun setSkipIcons(rev: Boolean, ff: Boolean)
+
         fun setProgress(progress: Int, max: Int)
 
         var presenter: Presenter?

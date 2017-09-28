@@ -1,7 +1,5 @@
 package se.asapehrsson.podtest.miniplayer
 
-import android.media.MediaMetadata
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -9,7 +7,7 @@ import se.asapehrsson.podtest.backgroundservice.AudioService
 import se.asapehrsson.podtest.data.Episode
 
 
-class MediaPlayerPresenter() : PlayerContract.Presenter {
+class MediaPlayerPresenter : PlayerContract.Presenter {
 
     private val TAG = MediaPlayerPresenter::class.java.simpleName
 
@@ -41,7 +39,7 @@ class MediaPlayerPresenter() : PlayerContract.Presenter {
                     currentState = STATE_PAUSED
                     view?.setIconState(PlayerContract.State.PAUSED)
                 }
-                PlaybackStateCompat.STATE_NONE ->{
+                PlaybackStateCompat.STATE_NONE -> {
                     mediaController?.metadata?.let {
                         var desc = it.description
                         view!!.setFirstRow(desc?.title?.toString())
@@ -52,7 +50,10 @@ class MediaPlayerPresenter() : PlayerContract.Presenter {
                 }
             }
 
-            Log.d("", "")
+            var rev = state.actions and PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS > 0
+            var ff = state.actions and PlaybackStateCompat.ACTION_SKIP_TO_NEXT > 0
+
+            view?.setSkipIcons(rev, ff)
         }
     }
 
@@ -66,19 +67,12 @@ class MediaPlayerPresenter() : PlayerContract.Presenter {
     override fun update(episode: Episode, view: PlayerContract.View) {
         this.view = view
         this.episode = episode
-
-//        with(view) {
-//            setFirstRow(episode.title)
-//            setSecondRow(episode.description)
-//            setThumbnail(episode.imageurl)
-//            setIconState(PlayerContract.State.PAUSED)
-//        }
     }
 
     override fun play(id: Int) {
         try {
             episode?.let {
-                mediaController?.transportControls?.skipToQueueItem(1234L)
+                mediaController?.transportControls?.skipToQueueItem(id.toLong())
                 mediaController?.sendCommand(AudioService.COMMAND_EXAMPLE, null, null)
             }
         } catch (e: Exception) {
@@ -103,6 +97,8 @@ class MediaPlayerPresenter() : PlayerContract.Presenter {
             PlayerContract.Source.SEEK_START -> mediaController?.transportControls?.pause()
             PlayerContract.Source.SEEK_DONE -> mediaController?.transportControls?.play()
             PlayerContract.Source.CLOSE -> mediaController?.transportControls?.stop()
+            PlayerContract.Source.NEXT -> mediaController?.transportControls?.skipToNext()
+            PlayerContract.Source.PREV -> mediaController?.transportControls?.skipToPrevious()
         }
     }
 
