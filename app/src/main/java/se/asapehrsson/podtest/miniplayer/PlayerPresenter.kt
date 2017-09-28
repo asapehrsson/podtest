@@ -11,10 +11,6 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter {
     private var mediaPlayer: IMediaPlayer? = null
     private var episode: Episode? = null
 
-    override fun init() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     override fun update(episode: Episode, view: PlayerContract.View) {
         this.view = view
         this.episode = episode

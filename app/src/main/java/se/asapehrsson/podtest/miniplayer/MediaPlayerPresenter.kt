@@ -1,18 +1,13 @@
 package se.asapehrsson.podtest.miniplayer
 
-import android.app.Activity
-import android.content.ComponentName
-import android.os.RemoteException
-import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import se.asapehrsson.podtest.backgroundservice.BackgroundAudioService
 import se.asapehrsson.podtest.data.Episode
 
 
-class MediaPlayerPresenter(private val activity: Activity) : PlayerContract.Presenter {
+class MediaPlayerPresenter() : PlayerContract.Presenter {
 
     private val TAG = MediaPlayerPresenter::class.java.simpleName
 
@@ -20,15 +15,12 @@ class MediaPlayerPresenter(private val activity: Activity) : PlayerContract.Pres
     private val STATE_PLAYING = 1
 
     private var currentState: Int = 0
-    private var connected = false;
 
     private var view: PlayerContract.View? = null
 
     private var episode: Episode? = null
 
-    private var mediaBrowser: MediaBrowserCompat? = null
     private var mediaController: MediaControllerCompat? = null
-    //private var mediaSession : MediaSessionCompat? = null
 
     private val mediaControllerCallback = object : MediaControllerCompat.Callback() {
 
@@ -50,31 +42,12 @@ class MediaPlayerPresenter(private val activity: Activity) : PlayerContract.Pres
             }
         }
     }
-    private val mediaBrowserConnectionCallback = object : MediaBrowserCompat.ConnectionCallback() {
 
-        override fun onConnected() {
-            super.onConnected()
-            try {
 
-                val token = mediaBrowser?.sessionToken
-
-                mediaController = MediaControllerCompat(activity, token!!)
-
-                mediaController?.registerCallback(mediaControllerCallback)
-                MediaControllerCompat.setMediaController(activity, mediaController)
-                connected = true;
-
-                Log.d(TAG, "")
-
-            } catch (e: RemoteException) {
-
-            }
-        }
-    }
-
-    override fun init() {
-        mediaBrowser = MediaBrowserCompat(activity, ComponentName(activity, BackgroundAudioService::class.java), mediaBrowserConnectionCallback, null)
-        mediaBrowser?.connect()
+    fun init(mediaController: MediaControllerCompat) {
+        this.mediaController = mediaController;
+        mediaController.unregisterCallback(mediaControllerCallback)
+        mediaController.registerCallback(mediaControllerCallback)
     }
 
     override fun update(episode: Episode, view: PlayerContract.View) {
@@ -91,19 +64,17 @@ class MediaPlayerPresenter(private val activity: Activity) : PlayerContract.Pres
 
     override fun start() {
         try {
-            if (connected) {
-                //mediaControllerCompat?.transportControls?.playFromMediaId(episode!!.listenpodfile!!.url!!, null)
-                episode?.let {
+            //mediaControllerCompat?.transportControls?.playFromMediaId(episode!!.listenpodfile!!.url!!, null)
+            episode?.let {
 
-                    val description = MediaDescriptionCompat.Builder()
-                            .setMediaId(episode?.listenpodfile?.url ?: "")
-                            .setTitle(episode?.title)
-                            .setSubtitle(episode?.description)
-                            .build()
-                    mediaController?.addQueueItem(description)
+                val description = MediaDescriptionCompat.Builder()
+                        .setMediaId(episode?.listenpodfile?.url ?: "")
+                        .setTitle(episode?.title)
+                        .setSubtitle(episode?.description)
+                        .build()
+                mediaController?.addQueueItem(description)
 
 
-                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -111,13 +82,12 @@ class MediaPlayerPresenter(private val activity: Activity) : PlayerContract.Pres
     }
 
     override fun itemClicked() {
-        val mediaController = MediaControllerCompat.getMediaController(activity)
         if (currentState == STATE_PAUSED) {
-            mediaController.transportControls.play()
+            mediaController?.transportControls?.play()
             currentState = STATE_PLAYING
         } else {
-            if (mediaController.playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
-                mediaController.transportControls.pause()
+            if (mediaController?.playbackState?.state == PlaybackStateCompat.STATE_PLAYING) {
+                mediaController?.transportControls?.pause()
             }
 
             currentState = STATE_PAUSED
@@ -125,13 +95,6 @@ class MediaPlayerPresenter(private val activity: Activity) : PlayerContract.Pres
     }
 
     override fun close() {
-        val mediaController = MediaControllerCompat.getMediaController(activity)
-
-        if (mediaController.playbackState.state == PlaybackStateCompat.STATE_PLAYING) {
-            mediaController.transportControls.pause()
-        }
-
-        mediaBrowser?.disconnect()
+        mediaController?.unregisterCallback(mediaControllerCallback)
     }
-
 }

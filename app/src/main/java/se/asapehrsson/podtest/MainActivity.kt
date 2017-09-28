@@ -1,10 +1,14 @@
 package se.asapehrsson.podtest
 
+import android.content.ComponentName
 import android.os.Bundle
 import android.os.Handler
+import android.os.RemoteException
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.SwipeDismissBehavior
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.CardView
@@ -17,6 +21,7 @@ import android.view.ViewGroup
 import butterknife.BindView
 import butterknife.ButterKnife
 import org.jetbrains.anko.doAsync
+import se.asapehrsson.podtest.backgroundservice.BackgroundAudioService
 import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.details.DetailsView
 import se.asapehrsson.podtest.miniplayer.MediaPlayerPresenter
@@ -24,6 +29,7 @@ import se.asapehrsson.podtest.miniplayer.PlayerContract
 import se.asapehrsson.podtest.miniplayer.PlayerView
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
+    private val TAG = MainActivity::class.java.simpleName
 
     @BindView(R.id.recycler_view_swipe_container) internal lateinit var recyclerViewSwipeContainer: SwipeRefreshLayout
     @BindView(R.id.recycler_view) internal lateinit var recyclerView: RecyclerView
@@ -34,6 +40,9 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     private var miniPlayerPresenter: PlayerContract.Presenter? = null
     private var episodeDetailsPresenter: EpisodeDetailsPresenter? = null
     // private var episodeDetailsBottomSheetDialog: BottomSheetDialog? = null
+
+    private var mediaBrowser: MediaBrowserCompat? = null
+    private var mediaController: MediaControllerCompat? = null
 
     private val bottomSheet: BottomSheetBehavior<DetailsView> by lazy {
         episodeDetailsPresenter = EpisodeDetailsPresenter(episodeDetailsView)
@@ -57,8 +66,36 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
         setContentView(R.layout.activity_main)
         ButterKnife.bind(this)
 
+        setupMediaService()
         setupEpisodeList()
         setupMiniPlayer()
+    }
+
+    private fun setupMediaService() {
+        val mediaBrowserConnectionCallback = object : MediaBrowserCompat.ConnectionCallback() {
+
+            override fun onConnected() {
+                super.onConnected()
+                try {
+
+                    mediaController = MediaControllerCompat(this@MainActivity, mediaBrowser?.sessionToken!!)
+                    MediaControllerCompat.setMediaController(this@MainActivity, mediaController)
+
+                    if (miniPlayerPresenter is MediaPlayerPresenter) {
+                        (miniPlayerPresenter as MediaPlayerPresenter).init(mediaController!!)
+                    }
+
+                } catch (e: RemoteException) {
+
+                }
+            }
+        }
+        //TODO remove ComponentName
+        mediaBrowser = MediaBrowserCompat(this, ComponentName(this, BackgroundAudioService::class.java),
+                mediaBrowserConnectionCallback,
+                null //optional bundle
+        )
+        mediaBrowser?.connect()
     }
 
     override fun onChange(event: SparseArray<Episode>) {
@@ -83,11 +120,14 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     }
 
     private fun setupMiniPlayer() {
-        miniPlayerPresenter = MediaPlayerPresenter(this)
-        miniPlayerPresenter?.init()
+        miniPlayerPresenter = MediaPlayerPresenter()
         playerView.presenter = miniPlayerPresenter
 
         showMiniPlayer(false)
+
+        if (mediaController != null) {
+            (miniPlayerPresenter as MediaPlayerPresenter).init(mediaController!!)
+        }
 
         //Swipe to dismiss mini player
         val swipeDismissBehavior = SwipeDismissBehavior<CardView>()
@@ -151,5 +191,10 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     override fun onPause() {
         super.onPause()
         //miniPlayerPresenter?.close()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaBrowser?.disconnect()
     }
 }
