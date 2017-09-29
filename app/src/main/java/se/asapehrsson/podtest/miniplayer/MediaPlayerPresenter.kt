@@ -53,7 +53,7 @@ class MediaPlayerPresenter : PlayerContract.Presenter {
                         view?.setFirstRow(desc?.title?.toString())
                         view?.setSecondRow(desc?.subtitle?.toString())
                         view?.setThumbnail(desc?.iconUri?.toString())
-                        view?.setIconState(PlayerContract.State.PAUSED)
+                        //view?.setIconState(PlayerContract.State.PAUSED)
 
                         durationInMillis = it.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
                     }
@@ -61,6 +61,7 @@ class MediaPlayerPresenter : PlayerContract.Presenter {
                 PlaybackStateCompat.STATE_SKIPPING_TO_NEXT,
                 PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS,
                 PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM -> {
+                    view?.setIconState(PlayerContract.State.BUFFERING)
                     handler?.removeCallbacksAndMessages(null)
                 }
                 else -> {
