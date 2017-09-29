@@ -95,7 +95,11 @@ class MediaPlayerPresenter : PlayerContract.Presenter {
                 }
             }
             PlayerContract.Source.SEEK_START -> mediaController?.transportControls?.pause()
-            PlayerContract.Source.SEEK_DONE -> mediaController?.transportControls?.play()
+            PlayerContract.Source.SEEK_DONE -> {
+                val newPosition = if (arg == 0) 0 else episode?.listenpodfile?.duration!! * arg / 100
+                mediaController?.transportControls?.seekTo(newPosition.toLong())
+                mediaController?.transportControls?.play()
+            }
             PlayerContract.Source.CLOSE -> mediaController?.transportControls?.stop()
             PlayerContract.Source.NEXT -> mediaController?.transportControls?.skipToNext()
             PlayerContract.Source.PREV -> mediaController?.transportControls?.skipToPrevious()

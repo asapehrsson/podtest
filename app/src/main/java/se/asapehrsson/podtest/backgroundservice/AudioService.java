@@ -114,6 +114,7 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         @Override
         public void onSeekTo(long pos) {
             super.onSeekTo(pos);
+            mediaPlayer.seekTo((int) (pos * 1000));
         }
 
         @Override
@@ -277,8 +278,12 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         }
         mediaPlayer.setVolume(1.0f, 1.0f);
-
-
+        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mediaPlayer) {
+                mediaSessionCallback.onSkipToNext();
+            }
+        });
     }
 
     private void initMediaSession() {
@@ -356,7 +361,14 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             playbackstateBuilder.setActions(PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
         }
 
-        playbackstateBuilder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
+        long position = PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN;
+        int playbackSpeed = 0;
+
+        if (mediaPlayer != null) {
+            position = mediaPlayer.getCurrentPosition();
+            playbackSpeed = mediaPlayer.isPlaying() ? 1 : 0;
+        }
+        playbackstateBuilder.setState(state, position, playbackSpeed);
 
         mediaSession.setPlaybackState(playbackstateBuilder.build());
     }
