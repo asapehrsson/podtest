@@ -1,5 +1,7 @@
 package se.asapehrsson.podtest.miniplayer
 
+import android.os.Handler
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -13,6 +15,7 @@ class MediaPlayerPresenter : PlayerContract.Presenter {
 
     private val STATE_PAUSED = 0
     private val STATE_PLAYING = 1
+    private val STATE_IDLE = 2
 
     private var currentState: Int = 0
 
@@ -30,23 +33,38 @@ class MediaPlayerPresenter : PlayerContract.Presenter {
                 return
             }
             Log.d(TAG, "state=" + state)
+            var mayUpdateProgress = false
+
             when (state.state) {
                 PlaybackStateCompat.STATE_PLAYING -> {
                     currentState = STATE_PLAYING
                     view?.setIconState(PlayerContract.State.PLAYING)
+                    mayUpdateProgress = true
                 }
                 PlaybackStateCompat.STATE_PAUSED -> {
                     currentState = STATE_PAUSED
                     view?.setIconState(PlayerContract.State.PAUSED)
                 }
                 PlaybackStateCompat.STATE_NONE -> {
+                    handler?.removeCallbacksAndMessages(null)
+                    view?.setProgress(0, 100)
                     mediaController?.metadata?.let {
                         var desc = it.description
-                        view!!.setFirstRow(desc?.title?.toString())
-                        view!!.setSecondRow(desc?.subtitle?.toString())
-                        view!!.setThumbnail(desc?.iconUri?.toString())
-                        view!!.setIconState(PlayerContract.State.PAUSED)
+                        view?.setFirstRow(desc?.title?.toString())
+                        view?.setSecondRow(desc?.subtitle?.toString())
+                        view?.setThumbnail(desc?.iconUri?.toString())
+                        view?.setIconState(PlayerContract.State.PAUSED)
+
+                        durationInMillis = it.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)
                     }
+                }
+                PlaybackStateCompat.STATE_SKIPPING_TO_NEXT,
+                PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS,
+                PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM -> {
+                    handler?.removeCallbacksAndMessages(null)
+                }
+                else -> {
+                    currentState = STATE_IDLE
                 }
             }
 
@@ -54,14 +72,45 @@ class MediaPlayerPresenter : PlayerContract.Presenter {
             var ff = state.actions and PlaybackStateCompat.ACTION_SKIP_TO_NEXT > 0
 
             view?.setSkipIcons(rev, ff)
+
+
+            var newPositionInMillis = (mediaController?.playbackState?.position) ?: 0 + (mediaController?.playbackState?.lastPositionUpdateTime ?: 0)
+            var newPositionUpdateTimeInMillis = System.currentTimeMillis()
+
+            if (mayUpdateProgress && newPositionInMillis != positionInMillis) {
+                handler?.removeCallbacksAndMessages(null)
+                positionUpdateTimeInMillis = newPositionUpdateTimeInMillis
+                positionInMillis = newPositionInMillis
+                Log.d(TAG, "event. updating progress=" + positionInMillis + " duration=" + durationInMillis)
+                handler!!.post(runnable)
+            }
         }
     }
 
+    private var positionUpdateTimeInMillis: Long = 0
+    private var positionInMillis: Long = 0
+    private var durationInMillis: Long = 0
+
+    private var handler: Handler? = null
+
+    private val runnable = object : Runnable {
+        override fun run() {
+            var currentPos = ((System.currentTimeMillis() - positionUpdateTimeInMillis) + positionInMillis)
+
+            if (currentState == STATE_PLAYING && currentPos <= durationInMillis) {
+                view?.setProgress(currentPos.toInt(), durationInMillis.toInt())
+
+                Log.d(TAG, "progress=" + currentPos + " duration=" + durationInMillis)
+            }
+            handler?.postDelayed(this, 800) // reschedule
+        }
+    }
 
     fun init(mediaController: MediaControllerCompat) {
         this.mediaController = mediaController;
         mediaController.unregisterCallback(mediaControllerCallback)
         mediaController.registerCallback(mediaControllerCallback)
+        handler = Handler() // new handler
     }
 
     override fun update(episode: Episode, view: PlayerContract.View) {
@@ -96,8 +145,8 @@ class MediaPlayerPresenter : PlayerContract.Presenter {
             }
             PlayerContract.Source.SEEK_START -> mediaController?.transportControls?.pause()
             PlayerContract.Source.SEEK_DONE -> {
-                val newPosition = if (arg == 0) 0 else episode?.listenpodfile?.duration!! * arg / 100
-                mediaController?.transportControls?.seekTo(newPosition.toLong())
+                Log.d(TAG, "seek to=" + arg + " duration=" + durationInMillis)
+                mediaController?.transportControls?.seekTo(arg.toLong())
                 mediaController?.transportControls?.play()
             }
             PlayerContract.Source.CLOSE -> mediaController?.transportControls?.stop()

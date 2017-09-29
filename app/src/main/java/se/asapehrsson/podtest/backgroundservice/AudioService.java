@@ -114,7 +114,7 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         @Override
         public void onSeekTo(long pos) {
             super.onSeekTo(pos);
-            mediaPlayer.seekTo((int) (pos * 1000));
+            mediaPlayer.seekTo((int) pos);
         }
 
         @Override
@@ -123,8 +123,9 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             for (int i = 0; i < mediaQueue.size(); i++) {
                 MediaSessionCompat.QueueItem queueItem = mediaQueue.get(i);
                 if (queueItem.getQueueId() == id) {
-                    loadAndPlay(queueItem.getDescription());
                     currentQueueIndex = i;
+                    setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM);
+                    loadAndPlay(queueItem.getDescription());
                 }
             }
         }
@@ -136,6 +137,7 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             int newIndex = currentQueueIndex + 1;
             if (newIndex > 0 && newIndex < mediaQueue.size()) {
                 currentQueueIndex = newIndex;
+                setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT);
                 loadAndPlay(mediaQueue.get(newIndex).getDescription());
             }
         }
@@ -146,6 +148,7 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
             int newIndex = currentQueueIndex - 1;
             if (newIndex > 0 && newIndex < mediaQueue.size()) {
                 currentQueueIndex = newIndex;
+                setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS);
                 loadAndPlay(mediaQueue.get(newIndex).getDescription());
             }
         }
@@ -155,6 +158,8 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         try {
             if (mediaPlayer == null) {
                 initMediaPlayer();
+            } else {
+                mediaPlayer.reset();
             }
 
             try {
@@ -281,7 +286,9 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                mediaSessionCallback.onSkipToNext();
+                if (mediaPlayer.getDuration() - mediaPlayer.getCurrentPosition() < 10) {
+                    mediaSessionCallback.onSkipToNext();
+                }
             }
         });
     }
@@ -314,8 +321,11 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, mediaDescription.getTitle().toString());
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, mediaDescription.getSubtitle().toString());
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ART_URI, mediaDescription.getIconUri().toString());
-        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, 1);
-        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, 5);
+
+        long duration = mediaDescription.getExtras().getLong(MediaMetadataCompat.METADATA_KEY_DURATION, 0);
+        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration);
+        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, currentQueueIndex + 1);
+        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, mediaQueue.size() + 1);
 
         mediaSession.setMetadata(metadataBuilder.build());
     }
@@ -382,6 +392,5 @@ public class AudioService extends MediaBrowserServiceCompat implements MediaPlay
 
         return result == AudioManager.AUDIOFOCUS_GAIN;
     }
-
 
 }
