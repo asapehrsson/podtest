@@ -22,12 +22,10 @@ import android.text.TextUtils
 import android.util.Log
 import se.asapehrsson.podtest.R
 import java.io.IOException
-import java.util.*
 
 class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChangeListener {
     private var mediaPlayer: MediaPlayer? = null
     private var mediaSession: MediaSessionCompat? = null
-    private var currentQueueIndex = -1
 
     private val noisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -36,15 +34,14 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
             }
         }
     }
-    private val mediaQueue = ArrayList<MediaSessionCompat.QueueItem>()
+    private val mediaQueueHandler = MediaQueueHandler()
     private val mediaSessionCallback = object : MediaSessionCompat.Callback() {
         override fun onPrepare() {
             super.onPrepare()
         }
 
         override fun onAddQueueItem(description: MediaDescriptionCompat?) {
-            super.onAddQueueItem(description)
-            mediaQueue.add(MediaSessionCompat.QueueItem(description!!, Integer.parseInt(description.mediaId).toLong()))
+            mediaQueueHandler.addItem(description!!)
         }
 
         override fun onStop() {
@@ -62,7 +59,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
             }
 
             setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING)
-            NotificationHelper.showPlayingNotification(this@AudioService, mediaSession!!, validIndex(currentQueueIndex - 1), validIndex(currentQueueIndex + 1))
+            NotificationHelper.showPlayingNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
             mediaPlayer?.start()
         }
 
@@ -72,7 +69,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
             if (mediaPlayer?.isPlaying == true) {
                 mediaPlayer?.pause()
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED)
-                NotificationHelper.showPausedNotification(mediaSession!!, this@AudioService, validIndex(currentQueueIndex - 1), validIndex(currentQueueIndex + 1))
+                NotificationHelper.showPausedNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
             }
         }
 
@@ -94,40 +91,31 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         }
 
         override fun onSkipToQueueItem(id: Long) {
-            super.onSkipToQueueItem(id)
-            for (i in mediaQueue.indices) {
-                val queueItem = mediaQueue[i]
-                if (queueItem.queueId == id) {
-                    currentQueueIndex = i
-                    setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM)
-                    loadAndPlay(queueItem.description)
-                }
+            try {
+                mediaQueueHandler.setActiveItemById(id)
+                val activeQueueItem = mediaQueueHandler.getActiveItem()
+                setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM)
+                loadAndPlay(activeQueueItem!!.description)
+            } catch (e: Exception) {
             }
         }
 
         override fun onSkipToNext() {
-            super.onSkipToNext()
-
-            val newIndex = currentQueueIndex + 1
-            if (validIndex(newIndex)) {
-                currentQueueIndex = newIndex
+            if (mediaQueueHandler.hasNextItem()) {
+                val activeQueueItem = mediaQueueHandler.skipToNextItem()
                 setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_NEXT)
-                loadAndPlay(mediaQueue[newIndex].description)
+                loadAndPlay(activeQueueItem!!.description)
             }
         }
 
         override fun onSkipToPrevious() {
-            super.onSkipToPrevious()
-            val newIndex = currentQueueIndex - 1
-            if (validIndex(newIndex)) {
-                currentQueueIndex = newIndex
+            if (mediaQueueHandler.hasPreviousItem()) {
+                val activeQueueItem = mediaQueueHandler.skipToPreviousItem()
                 setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_PREVIOUS)
-                loadAndPlay(mediaQueue[newIndex].description)
+                loadAndPlay(activeQueueItem!!.description)
             }
         }
     }
-
-    private fun validIndex(index: Int): Boolean = index >= 0 && index < mediaQueue.size
 
     private fun loadAndPlay(mediaDescription: MediaDescriptionCompat) {
         try {
@@ -148,7 +136,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
                 mediaSession?.isActive = true
             }
             setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING)
-            NotificationHelper.showPlayingNotification(this@AudioService, mediaSession!!, validIndex(currentQueueIndex - 1), validIndex(currentQueueIndex + 1))
+            NotificationHelper.showPlayingNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
 
         } catch (e: IOException) {
             Log.d(TAG, "Got exception: " + e.message)
@@ -251,7 +239,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         mediaSession?.let {
             it.setCallback(mediaSessionCallback)
             it.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS or MediaSessionCompat.FLAG_HANDLES_QUEUE_COMMANDS)
-            it.setQueue(mediaQueue)
+            it.setQueue(mediaQueueHandler.mediaQueue)
             sessionToken = it.sessionToken
 
             val mediaButtonIntent = Intent(Intent.ACTION_MEDIA_BUTTON)
@@ -276,8 +264,8 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
 
         val duration = mediaDescription.extras?.getLong(MediaMetadataCompat.METADATA_KEY_DURATION, 0) ?: 0
         metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
-        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, (currentQueueIndex + 1).toLong())
-        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, (mediaQueue.size + 1).toLong())
+        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_TRACK_NUMBER, (mediaQueueHandler.activeQueueIndex + 1).toLong())
+        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_NUM_TRACKS, (mediaQueueHandler.mediaQueue.size + 1).toLong())
 
         mediaSession!!.setMetadata(metadataBuilder.build())
     }
@@ -291,10 +279,10 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
             capabilities = capabilities or PlaybackStateCompat.ACTION_PLAY
         }
 
-        if (validIndex(currentQueueIndex - 1)) {
+        if (mediaQueueHandler.hasPreviousItem()) {
             capabilities = capabilities or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
         }
-        if (validIndex(currentQueueIndex + 1)) {
+        if (mediaQueueHandler.hasNextItem()) {
             capabilities = capabilities or PlaybackStateCompat.ACTION_SKIP_TO_NEXT
         }
         playbackstateBuilder.setActions(capabilities)

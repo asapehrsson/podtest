@@ -17,10 +17,6 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 
 
-/**
- * Created by aasapehrsson on 2017-09-27.
- */
-
 class ExoMediaPlayer(private val context: Context) : IMediaPlayer {
     private var player: SimpleExoPlayer? = null
     private var playbackPosition: Long = 0
@@ -97,6 +93,5 @@ class ExoMediaPlayer(private val context: Context) : IMediaPlayer {
     override fun isPlaying(): Boolean {
         return player?.playWhenReady ?: false
     }
-
 
 }
