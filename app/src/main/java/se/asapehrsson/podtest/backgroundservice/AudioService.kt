@@ -17,8 +17,8 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextUtils
 import android.util.Log
 import se.asapehrsson.podtest.R
+import se.asapehrsson.podtest.player.ExoMediaPlayer
 import se.asapehrsson.podtest.player.IMediaPlayer
-import se.asapehrsson.podtest.player.SimpleMediaPlayer
 import java.io.IOException
 
 class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChangeListener {
@@ -130,7 +130,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
     }
 
     private fun initMediaPlayer() {
-        mediaPlayer = SimpleMediaPlayer(this.applicationContext)
+        mediaPlayer = ExoMediaPlayer(this.applicationContext)
         mediaPlayer?.getMediaState()?.subscribe { state ->
             when (state) {
                 PlaybackStateCompat.STATE_STOPPED -> {
@@ -201,7 +201,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
     }
 
     private fun initNoisyReceiver() {
-        //Handles headphones coming unplugged. cannot be done through a manifest receiver
+        //Handles headphones coming unplugged. TODO check why this cannot be done through a manifest receiver
         val filter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
         registerReceiver(noisyReceiver, filter)
     }
