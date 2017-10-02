@@ -3,12 +3,8 @@ package se.asapehrsson.podtest.backgroundservice
 import android.app.PendingIntent
 import android.content.*
 import android.graphics.BitmapFactory
-import android.media.AudioAttributes
 import android.media.AudioManager
-import android.media.MediaPlayer
-import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.os.ResultReceiver
 import android.support.v4.app.NotificationManagerCompat
 import android.support.v4.media.MediaBrowserCompat
@@ -21,31 +17,29 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.text.TextUtils
 import android.util.Log
 import se.asapehrsson.podtest.R
+import se.asapehrsson.podtest.player.IMediaPlayer
+import se.asapehrsson.podtest.player.SimpleMediaPlayer
 import java.io.IOException
 
 class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChangeListener {
-    private var mediaPlayer: MediaPlayer? = null
+    private var mediaPlayer: IMediaPlayer? = null
     private var mediaSession: MediaSessionCompat? = null
 
     private val noisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (mediaPlayer?.isPlaying == true) {
+            if (mediaPlayer?.isPlaying() == true) {
                 mediaPlayer?.pause()
             }
         }
     }
     private val mediaQueueHandler = MediaQueueHandler()
     private val mediaSessionCallback = object : MediaSessionCompat.Callback() {
-        override fun onPrepare() {
-            super.onPrepare()
-        }
 
         override fun onAddQueueItem(description: MediaDescriptionCompat?) {
             mediaQueueHandler.addItem(description!!)
         }
 
         override fun onStop() {
-            super.onStop()
             setMediaPlaybackState(PlaybackStateCompat.STATE_STOPPED)
 
             mediaPlayer?.release()
@@ -53,20 +47,16 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         }
 
         override fun onPlay() {
-            super.onPlay()
             if (!successfullyRetrievedAudioFocus()) {
                 return
             }
 
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING)
             NotificationHelper.showPlayingNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
-            mediaPlayer?.start()
+            mediaPlayer?.play()
         }
 
         override fun onPause() {
-            super.onPause()
-
-            if (mediaPlayer?.isPlaying == true) {
+            if (mediaPlayer?.isPlaying() == true) {
                 mediaPlayer?.pause()
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED)
                 NotificationHelper.showPausedNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
@@ -79,15 +69,13 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         }
 
         override fun onCommand(command: String?, extras: Bundle?, cb: ResultReceiver?) {
-            super.onCommand(command, extras, cb)
             if (COMMAND_EXAMPLE.equals(command!!, ignoreCase = true)) {
                 //Custom command here
             }
         }
 
         override fun onSeekTo(pos: Long) {
-            super.onSeekTo(pos)
-            mediaPlayer?.seekTo(pos.toInt())
+            mediaPlayer?.seekTo(pos)
         }
 
         override fun onSkipToQueueItem(id: Long) {
@@ -97,6 +85,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
                 setMediaPlaybackState(PlaybackStateCompat.STATE_SKIPPING_TO_QUEUE_ITEM)
                 loadAndPlay(activeQueueItem!!.description)
             } catch (e: Exception) {
+                Log.d(TAG, "", e)
             }
         }
 
@@ -119,29 +108,17 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
 
     private fun loadAndPlay(mediaDescription: MediaDescriptionCompat) {
         try {
-            if (mediaPlayer == null) {
-                initMediaPlayer()
-            } else {
-                mediaPlayer?.reset()
-            }
-
-            mediaPlayer?.setDataSource(applicationContext, mediaDescription.mediaUri!!)
-
             setMediaSessionMetadata(mediaDescription)
-            setMediaPlaybackState(PlaybackStateCompat.STATE_NONE)
+            mediaPlayer?.loadAndPlay(mediaDescription.mediaUri!!.toString())
 
-            mediaPlayer?.prepare()
-            mediaPlayer?.start()
             if (mediaSession?.isActive == false) {
                 mediaSession?.isActive = true
             }
-            setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING)
             NotificationHelper.showPlayingNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
 
         } catch (e: IOException) {
             Log.d(TAG, "Got exception: " + e.message)
         }
-
     }
 
     override fun onCreate() {
@@ -152,8 +129,25 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         initNoisyReceiver()
     }
 
+    private fun initMediaPlayer() {
+        mediaPlayer = SimpleMediaPlayer(this.applicationContext)
+        mediaPlayer?.getMediaState()?.subscribe { state ->
+            when (state) {
+                PlaybackStateCompat.STATE_STOPPED -> {
+                    if (mediaQueueHandler.hasNextItem()) {
+                        mediaSessionCallback.onSkipToNext()
+                    } else {
+                        setMediaPlaybackState(state)
+                    }
+                }
+                else -> {
+                    setMediaPlaybackState(state)
+                }
+            }
+        }
+    }
 
-    //Not important for general audio service, required for class
+    //Currently not used
     override fun onGetRoot(clientPackageName: String, clientUid: Int, rootHints: Bundle?): MediaBrowserServiceCompat.BrowserRoot? {
         return if (TextUtils.equals(clientPackageName, packageName)) {
             MediaBrowserServiceCompat.BrowserRoot(getString(R.string.app_name), null)
@@ -161,7 +155,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
 
     }
 
-    //Not important for general audio service, required for class
+    //Currently not used
     override fun onLoadChildren(parentId: String, result: MediaBrowserServiceCompat.Result<List<MediaBrowserCompat.MediaItem>>) {
         result.sendResult(null)
     }
@@ -170,8 +164,8 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         when (focusChange) {
             AudioManager.AUDIOFOCUS_LOSS -> {
                 mediaPlayer?.let {
-                    if (it.isPlaying) {
-                        it.stop()
+                    if (it.isPlaying()) {
+                        it.release()
                     }
                 }
             }
@@ -179,14 +173,14 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
                 mediaPlayer?.pause()
             }
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
-                mediaPlayer?.setVolume(0.3f, 0.3f)
+                mediaPlayer?.setVolume(0.3f)
             }
             AudioManager.AUDIOFOCUS_GAIN -> {
                 mediaPlayer?.let {
-                    if (!it.isPlaying) {
-                        it.start()
+                    if (!it.isPlaying()) {
+                        it.play()
                     }
-                    it.setVolume(1.0f, 1.0f)
+                    it.setVolume(1.0f)
                 }
             }
         }
@@ -210,27 +204,6 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         //Handles headphones coming unplugged. cannot be done through a manifest receiver
         val filter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
         registerReceiver(noisyReceiver, filter)
-    }
-
-
-    private fun initMediaPlayer() {
-        mediaPlayer = MediaPlayer()
-
-        mediaPlayer?.let {
-            it.setWakeMode(applicationContext, PowerManager.PARTIAL_WAKE_LOCK)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                it.setAudioAttributes(AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
-            } else {
-                it.setAudioStreamType(AudioManager.STREAM_MUSIC)
-            }
-            it.setVolume(1.0f, 1.0f)
-
-            it.setOnCompletionListener { mediaPlayer ->
-                if (mediaPlayer.duration - mediaPlayer.currentPosition < 10) {
-                    mediaSessionCallback.onSkipToNext()
-                }
-            }
-        }
     }
 
     private fun initMediaSession() {
@@ -291,8 +264,8 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         var playbackSpeed = 0
 
         mediaPlayer?.let {
-            position = it.currentPosition.toLong()
-            playbackSpeed = if (it.isPlaying) 1 else 0
+            position = it.currentPositionInMillis()
+            playbackSpeed = if (it.isPlaying()) 1 else 0
         }
 
         playbackstateBuilder.setState(state, position, playbackSpeed.toFloat())

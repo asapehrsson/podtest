@@ -42,7 +42,7 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter {
         var isActive: Boolean = mediaPlayer != null
         context.runOnUiThread {
             if (isActive) {
-                val playing = mediaPlayer?.isPlaying ?: false
+                val playing = mediaPlayer?.isPlaying() ?: false
                 if (playing) {
                     view?.setIconState(PlayerContract.State.PLAYING)
                 } else {
@@ -57,7 +57,7 @@ class PlayerPresenter(private val context: Context) : PlayerContract.Presenter {
 
     override fun event(source: PlayerContract.Source, arg: Int) {
         mediaPlayer?.let {
-            if (it.isPlaying) {
+            if (it.isPlaying()) {
                 it.pause()
             } else {
                 it.play()

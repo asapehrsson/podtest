@@ -2,6 +2,7 @@ package se.asapehrsson.podtest.player
 
 import android.content.Context
 import android.net.Uri
+import android.support.v4.media.session.PlaybackStateCompat
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlayerFactory
@@ -15,15 +16,29 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
+import io.reactivex.subjects.BehaviorSubject
 
 
 class ExoMediaPlayer(private val context: Context) : IMediaPlayer {
+    override fun setVolume(fl: Float) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun currentPositionInMillis(): Long {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     private var player: SimpleExoPlayer? = null
     private var playbackPosition: Long = 0
     private var currentWindow: Int = 0
     private var playWhenReady = true
 
     private var eventLogger: EventLogger? = null
+    private var behaviorSubject = BehaviorSubject.create<@PlaybackStateCompat.State Int>()
+
+    override fun getMediaState(): BehaviorSubject<Int>? {
+        return behaviorSubject;
+    }
 
     private fun initializePlayer() {
         if (player == null) {
@@ -94,4 +109,7 @@ class ExoMediaPlayer(private val context: Context) : IMediaPlayer {
         return player?.playWhenReady ?: false
     }
 
+    override fun seekTo(positionInMillis: Long) {
+        player?.seekTo(positionInMillis)
+    }
 }
