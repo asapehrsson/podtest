@@ -32,6 +32,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
             }
         }
     }
+    private var mediaNotificationManager: MediaNotificationManager? = null
     private val mediaQueueHandler = MediaQueueHandler()
     private val mediaSessionCallback = object : MediaSessionCompat.Callback() {
 
@@ -51,7 +52,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
                 return
             }
 
-            NotificationHelper.showPlayingNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
+            mediaNotificationManager?.startNotification()
             mediaPlayer?.play()
         }
 
@@ -59,7 +60,6 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
             if (mediaPlayer?.isPlaying() == true) {
                 mediaPlayer?.pause()
                 setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED)
-                NotificationHelper.showPausedNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
             }
         }
 
@@ -109,12 +109,12 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
     private fun loadAndPlay(mediaDescription: MediaDescriptionCompat) {
         try {
             setMediaSessionMetadata(mediaDescription)
+            setMediaPlaybackState(PlaybackStateCompat.STATE_BUFFERING)
             mediaPlayer?.loadAndPlay(mediaDescription.mediaUri!!.toString())
 
             if (mediaSession?.isActive == false) {
                 mediaSession?.isActive = true
             }
-            NotificationHelper.showPlayingNotification(this@AudioService, mediaSession!!, mediaQueueHandler.hasPreviousItem(), mediaQueueHandler.hasNextItem())
 
         } catch (e: IOException) {
             Log.d(TAG, "Got exception: " + e.message)
@@ -127,6 +127,7 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         initMediaPlayer()
         initMediaSession()
         initNoisyReceiver()
+        mediaNotificationManager = MediaNotificationManager(this, mediaQueueHandler)
     }
 
     private fun initMediaPlayer() {
@@ -196,8 +197,9 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         audioManager.abandonAudioFocus(this)
         unregisterReceiver(noisyReceiver)
-        mediaSession!!.release()
-        NotificationManagerCompat.from(this).cancel(1)
+        mediaSession?.release()
+
+        mediaNotificationManager?.stopNotification()
     }
 
     private fun initNoisyReceiver() {

@@ -29,6 +29,7 @@ import se.asapehrsson.podtest.mediaqueue.setQueue
 import se.asapehrsson.podtest.miniplayer.MediaPlayerPresenter
 import se.asapehrsson.podtest.miniplayer.PlayerContract
 import se.asapehrsson.podtest.miniplayer.PlayerView
+import se.asapehrsson.podtest.player.SimpleMediaPlayer
 
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
@@ -221,5 +222,9 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
     override fun onDestroy() {
         super.onDestroy()
         mediaBrowser?.disconnect()
+    }
+    public companion object {
+        private val TAG = SimpleMediaPlayer::class.java.simpleName
+        private val EXTRA_CURRENT_MEDIA_DESCRIPTION = "se.asapehrsson.podtest.current.media.description"
     }
 }
