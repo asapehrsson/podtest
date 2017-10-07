@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
                 }
             }
         }
-        //TODO remove ComponentName
+
         mediaBrowser = MediaBrowserCompat(this, ComponentName(this, AudioService::class.java),
                 mediaBrowserConnectionCallback,
                 null //optional bundle

@@ -6,6 +6,7 @@ import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.player.ExoMediaPlayer
 import se.asapehrsson.podtest.player.IMediaPlayer
 
+//Interacting directly with exoplayer
 class PlayerPresenter(private val context: Context) : PlayerContract.Presenter {
     private var view: PlayerContract.View? = null
     private var mediaPlayer: IMediaPlayer? = null

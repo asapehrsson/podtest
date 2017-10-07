@@ -35,6 +35,9 @@ class AudioService : MediaBrowserServiceCompat(), AudioManager.OnAudioFocusChang
     private var mediaNotificationManager: MediaNotificationManager? = null
     private val mediaQueueHandler = MediaQueueHandler()
     private val mediaSessionCallback = object : MediaSessionCompat.Callback() {
+        override fun onPlayFromSearch(query: String?, extras: Bundle?) {
+            super.onPlayFromSearch(query, extras)
+        }
 
         override fun onAddQueueItem(description: MediaDescriptionCompat?) {
             mediaQueueHandler.addItem(description!!)

@@ -8,7 +8,7 @@ import android.util.Log
 import se.asapehrsson.podtest.backgroundservice.AudioService
 import se.asapehrsson.podtest.data.Episode
 
-
+//Interacting with player by using MediaControllerCompat
 class MediaPlayerPresenter : PlayerContract.Presenter {
 
     private val TAG = MediaPlayerPresenter::class.java.simpleName

@@ -2,6 +2,7 @@ package se.asapehrsson.podtest
 
 import android.util.SparseArray
 import android.view.View
+import okhttp3.Request
 import se.asapehrsson.podtest.data.Episode
 import se.asapehrsson.podtest.data.Episodes
 import se.asapehrsson.podtest.data.Pagination
@@ -30,9 +31,16 @@ class LazyLoadedEpisodeList : Result {
         if (!isLoading) {
             isLoading = true
             if (pagination == null) {
-                Thread(FetchEpisodesTask(this, START_URL)).start()
+                val request = Request.Builder()
+                        .url(START_URL)
+                        .build()
+                Thread(FetchEpisodesTask(this, request)).start()
+
             } else if (pagination?.nextpage != null) {
-                Thread(FetchEpisodesTask(this, pagination!!.nextpage)).start()
+                val request = Request.Builder()
+                        .url(pagination!!.nextpage)
+                        .build()
+                Thread(FetchEpisodesTask(this, request)).start()
             }
         }
     }
@@ -77,6 +85,6 @@ class LazyLoadedEpisodeList : Result {
     //Class constants
     companion object {
         //Start and end dates as variables
-        private val START_URL = "http://api.sr.se/api/v2/episodes/index?programid=2519&fromdate=2017-01-01&todate=2017-09-01&urltemplateid=3&audioquality=hi&format=json"
+        private val START_URL = "http://api.sr.se/api/v2/episodes/index?programid=3381&fromdate=2017-01-01&todate=2017-09-01&urltemplateid=3&audioquality=hi&format=json"
     }
 }
