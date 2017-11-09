@@ -38,6 +38,9 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import se.asapehrsson.podtest.MainActivity
 import se.asapehrsson.podtest.R
+import android.support.v4.content.ContextCompat
+
+
 
 /**
  * Keeps track of a notification and updates it automatically for a given
@@ -90,7 +93,7 @@ class MediaNotificationManager(val audioService: AudioService, val queueHandler:
      * updated. The notification will automatically be removed if the session is
      * destroyed before [.stopNotification] is called.
      */
-    fun startNotification() {
+    fun startNotification(context: Context) {
         if (!started) {
             mediaMetadata = mediaController?.metadata
             playbackState = mediaController?.playbackState
@@ -106,8 +109,16 @@ class MediaNotificationManager(val audioService: AudioService, val queueHandler:
                 filter.addAction(ACTION_PREV)
 
                 audioService.registerReceiver(this, filter)
+
+                val intent = Intent(context, AudioService::class.java)
+                ContextCompat.startForegroundService(context, intent)
                 audioService.startForeground(NOTIFICATION_ID, notification)
                 started = true
+
+
+
+
+
             }
         }
         if (playbackState?.state == PlaybackStateCompat.STATE_PLAYING || playbackState?.state == PlaybackStateCompat.STATE_PAUSED) {
@@ -296,6 +307,7 @@ class MediaNotificationManager(val audioService: AudioService, val queueHandler:
                     NotificationManager.IMPORTANCE_LOW)
 
             notificationChannel.description = "channel description"
+            notificationChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
 
             notificationManager.createNotificationChannel(notificationChannel)
         }
