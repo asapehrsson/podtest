@@ -30,6 +30,10 @@ import se.asapehrsson.podtest.miniplayer.MediaPlayerPresenter
 import se.asapehrsson.podtest.miniplayer.PlayerContract
 import se.asapehrsson.podtest.miniplayer.PlayerView
 import se.asapehrsson.podtest.player.SimpleMediaPlayer
+import com.crashlytics.android.Crashlytics
+import io.fabric.sdk.android.Fabric
+
+
 
 
 class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseArray<Episode>> {
@@ -87,7 +91,7 @@ class MainActivity : AppCompatActivity(), EpisodeViewer, ChangeListener<SparseAr
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         ButterKnife.bind(this)
-
+        Fabric.with(this, Crashlytics())
         setupMediaService()
         setupEpisodeList()
         setupMiniPlayer()

@@ -23,7 +23,7 @@ class FetchEpisodesTask(var result: Result, var request: Request) : Runnable {
 
     override fun run() {
 
-        Log.d(TAG, "Requesting: " + request!!.toString())
+        Log.d(TAG, "Requesting: " + request.toString())
 
         httpClient.newCall(request).enqueue(object : Callback {
 
@@ -36,7 +36,8 @@ class FetchEpisodesTask(var result: Result, var request: Request) : Runnable {
             override fun onResponse(call: Call, response: Response) {
                 try {
                     if (response.isSuccessful) {
-                        val body = response.body().string()
+                        var body = if (response.body() == null) "" else response.body()!!.string()
+
                         val episodes = gson.fromJson(body, Episodes::class.java)
 
                         Log.d(TAG, "Successful reply. " + episodes.toString())
@@ -50,7 +51,7 @@ class FetchEpisodesTask(var result: Result, var request: Request) : Runnable {
                     result.onFailed()
                 } finally {
                     try {
-                        response.body().close()
+                        response.body()!!.close()
                     } catch (e: Exception) {
                         //Ignore, for now
                     }

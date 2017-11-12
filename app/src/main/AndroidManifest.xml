@@ -39,6 +39,9 @@
                 <action android:name="android.media.AUDIO_BECOMING_NOISY" />
             </intent-filter>
         </receiver>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="c15512d87b3dc0f37e8fd8dff3e9435a9eda1a95" />
     </application>
 
 </manifest>
